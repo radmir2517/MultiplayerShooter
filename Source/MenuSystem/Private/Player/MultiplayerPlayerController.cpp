@@ -11,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/GameMode.h"
 #include "GameMode/MultiplayerGameModeTrue.h"
+#include "GameState/MultiplayerGameState.h"
 #include "HUD/MultiplayerHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "MultiplayerComponent/CombatComponent.h"
@@ -381,10 +382,39 @@ void AMultiplayerPlayerController::SetHUDAnnouncementCountdown(int32 CountDownTi
 			// превратим значение Ammo в текст и назначим виджету
 			FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 			AnnouncementWidget->WarmupTimer->SetText(FText::FromString(CountdownText));
-			// 4.5 изменим AnnouncementText
+			// 4.5 изменим AnnouncementText чтобы игрокам было понятно когда начнется нвоый раунд
 			FString AnnouncementText = "New Match Starts In:";
 			AnnouncementWidget->AnnouncementText->SetText(FText::FromString(AnnouncementText));
-			AnnouncementWidget->InfoText->SetText(FText());
+
+			//6.1 получим GameState чтобы получить список топового игрока
+			MultiplayerGameState = MultiplayerGameState ? MultiplayerGameState : MultiplayerGameState = Cast<AMultiplayerGameState>(UGameplayStatics::GetGameState(this));
+			if (MultiplayerGameState)
+			{	// создадим FString где будет написан(ы) игрок
+				FString TextForInfo;
+				if (MultiplayerGameState->TopScoringPlayers.Num() == 0)
+				{	// 6.2 если после таймера нет победителей
+					TextForInfo = FString("There is no chicken winner ))");
+				}
+				else if (MultiplayerGameState->TopScoringPlayers.Num() > 1)
+				{	// 6.3 если несколько людей набравших одинаковое число
+					TextForInfo = FString::Printf(TEXT("Players tied for the win: \n"));
+					for (auto ScopingPlayer : MultiplayerGameState->TopScoringPlayers)
+					{
+						FString PlayersName = FString::Printf(TEXT("%s \n"), *ScopingPlayer->GetName());
+						TextForInfo = TextForInfo.Append(PlayersName);
+					}
+				}
+				else if (MultiplayerGameState->TopScoringPlayers[0] == GetPlayerState<AMultiplayerPlayerState>())
+				{	// 6.4 если победитель один и это владелец PlayerController
+					TextForInfo = FString::Printf(TEXT("You're winner!!!"));
+				}
+				else if (MultiplayerGameState->TopScoringPlayers.Num() == 1 )
+				{	// 6.5 если победитель один и это другой игрок
+					TextForInfo = FString::Printf(TEXT("%s \n"), *MultiplayerGameState->TopScoringPlayers[0]->GetName());
+				}
+				// 6.5 изменим текст виджета
+				AnnouncementWidget->InfoText->SetText(FText::FromString(TextForInfo));
+			}
 		}
 	}
 }

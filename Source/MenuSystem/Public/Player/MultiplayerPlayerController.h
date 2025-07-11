@@ -7,6 +7,7 @@
 #include "UI/AnnouncementWidget.h"
 #include "MultiplayerPlayerController.generated.h"
 
+class AMultiplayerGameState;
 class AMultiplayerGameModeTrue;
 class AMultiplayerPlayerState;
 class AMultiplayerHUD;
@@ -54,7 +55,8 @@ public:
 
 	// 5.2 сделай геттер для Character для выключения AimOffset
 	FORCEINLINE bool IsDisableGameplay() const { return bDisableGameplay; }
-
+	// 6.1 добавим геттер для MatchState для Character в Destroyed
+	FORCEINLINE FName GetMatchState() const { return MatchState; }
 	
 protected:
 
@@ -158,6 +160,10 @@ private:
 
 	//5.1 булевая которая будет true при GameState == Cooldown и выключать некоторое управление
 	bool bDisableGameplay = false;
+
+	//6.1 добавим Game State для получение списка тового игрока не путать с состоянием MatchState и PlayerState
+	UPROPERTY()
+	AMultiplayerGameState* MultiplayerGameState;
 };
 
 

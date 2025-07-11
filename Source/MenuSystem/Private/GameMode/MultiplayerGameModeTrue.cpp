@@ -30,7 +30,7 @@ void AMultiplayerGameModeTrue::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	// получим GameState
-	MultiplayerGameState = GetGameState<AMultiplayerGameState>();
+	MultiplayerGameState = MultiplayerGameState ? MultiplayerGameState : MultiplayerGameState = GetGameState<AMultiplayerGameState>();
 	// получим имя игрока из playerState
 	FString NewPlayerName = NewPlayer->GetPlayerState<APlayerState>()->GetPlayerName();
 	if (MultiplayerGameState)
@@ -48,7 +48,7 @@ void AMultiplayerGameModeTrue::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 	// получим GameState
-	MultiplayerGameState = GetGameState<AMultiplayerGameState>();
+	MultiplayerGameState = MultiplayerGameState ? MultiplayerGameState : MultiplayerGameState = GetGameState<AMultiplayerGameState>();
 	// получим имя игрока из playerState
 	FString LeavingPlayerName = Exiting->GetPlayerState<APlayerState>()->GetPlayerName();
 	if (MultiplayerGameState)
@@ -72,10 +72,16 @@ void AMultiplayerGameModeTrue::PlayerEliminated(AMultiplayerCharacter* ElimmedCh
 	// чтобы назначить очки полсе убийства игрока надо получить их PlayerState
 	AMultiplayerPlayerState* ElimmedMultiplayerPlayerState = ElimmedController ? ElimmedController->GetPlayerState<AMultiplayerPlayerState>() : nullptr;
 	AMultiplayerPlayerState* AttackedMultiplayerPlayerState = AttackedController ? AttackedController->GetPlayerState<AMultiplayerPlayerState>() : nullptr;
+
+	//6.1 получим GameState чтобы запустить функцию проверки списка товового игрока
+	MultiplayerGameState = MultiplayerGameState ? MultiplayerGameState : MultiplayerGameState = GetGameState<AMultiplayerGameState>();
+	
 	// проверим что они есть и то что они равны друг другу, чтобы не бивать себя для очков
 	if (AttackedMultiplayerPlayerState && ElimmedMultiplayerPlayerState != AttackedMultiplayerPlayerState)
 	{
 		AttackedMultiplayerPlayerState->AddScorePoints(1.f);
+		// 6.2 после смерти запустим обнолвение списка тового игрока
+		MultiplayerGameState->UpdateTopScore(AttackedMultiplayerPlayerState);
 	}
 	// засчитаем очко поражения програвшему
 	if (ElimmedMultiplayerPlayerState)

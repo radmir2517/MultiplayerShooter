@@ -115,8 +115,6 @@ void AMultiplayerCharacter::PollInit()
 	}
 }
 
-
-
 void AMultiplayerCharacter::Destroyed()
 {
 	// деактивируем эффект при уничтожения объекта
@@ -124,7 +122,8 @@ void AMultiplayerCharacter::Destroyed()
 	{
 		ElimBotParticleComponent->Deactivate();
 	}
-	if (GetWeapon())
+	 // 6.1 проверим что мы находимся в последней стадии матча иначе людям нужны будут оружия
+	if (GetWeapon() && MultiplayerPlayerController && MultiplayerPlayerController->GetMatchState() == MatchState ::Cooldown)
 	{
 		GetWeapon()->Destroy();
 	}
@@ -150,9 +149,7 @@ void AMultiplayerCharacter::BeginPlay()
 		FInputModeGameOnly ModeUI;
 		PlayerController->SetInputMode(ModeUI);
 	}
-	
 }
-
 
 UCombatComponent* AMultiplayerCharacter::GetCombatComponent()
 {
