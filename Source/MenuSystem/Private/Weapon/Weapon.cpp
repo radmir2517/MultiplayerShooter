@@ -40,6 +40,34 @@ AWeapon::AWeapon()
 	NiagaraComponent->SetupAttachment(RootComponent);
 }
 
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+	// для того чтобы выполнялось на сервере HasAuthority, включим оверлам на пешку
+	if (HasAuthority() && WeaponState !=EWeaponState::EWC_Equipped)
+	{
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		AreaSphere->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
+		// добавим begin overlap чтобы показывать виджет
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereBeginOverlap);
+		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
+	}
+}
+
+void AWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeapon,WeaponState);
+	DOREPLIFETIME(AWeapon,WeaponAmmo);
+}
+
+
 void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 {
 	if (CasingClass)
@@ -59,7 +87,6 @@ void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 	}
 	// функция вычитания боеприпаса и показа его в Overlay.
 	SpendAmmo();
-
 }
 
 FHUDPackage AWeapon::GetHudPackage() const
@@ -93,32 +120,6 @@ void AWeapon::SetHUDAmmo_Public()
 	SetHUDAmmo();
 }
 
-void AWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-	// для того чтобы выполнялось на сервере HasAuthority, включим оверлам на пешку
-	if (HasAuthority() && WeaponState !=EWeaponState::EWC_Equipped)
-	{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		AreaSphere->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
-		// добавим begin overlap чтобы показывать виджет
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereBeginOverlap);
-		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
-	}
-}
-
-void AWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AWeapon,WeaponState);
-	DOREPLIFETIME(AWeapon,WeaponAmmo);
-}
 
 void AWeapon::OnRep_Owner()
 {

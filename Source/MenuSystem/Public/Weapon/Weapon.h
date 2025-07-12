@@ -94,8 +94,13 @@ protected:
 	TObjectPtr<UWidgetComponent> PickUpWidgetComponent;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category="Weapon Properties")
 	TObjectPtr<UNiagaraComponent> NiagaraComponent;
+	// 7.1 Если нет эффекта ниагары, а есть эффект каскады.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
+	TObjectPtr<UParticleSystem> SecondVariantFireEffect;
 	
 	TObjectPtr<UNiagaraSystem> NiagaraFireEffect;
+
+	
 	// класс для гильзы
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ACasing> CasingClass;
@@ -111,6 +116,8 @@ protected:
 
 	// компонент который будет создан во время выполнения эффекта
 	TObjectPtr<UNiagaraComponent> FireEffect;
+
+	
 
 	//
 	// Crosshair прицел

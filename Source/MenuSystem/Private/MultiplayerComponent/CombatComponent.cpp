@@ -53,7 +53,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	// для того чтобы каждый кадр оружие было направлено точно в цель мы вернем TraceUnderCrosshairs в Tick
-	if (MultiplayerCharacter->IsLocallyControlled())
+	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled())
 	{
 		TraceUnderCrosshairs(HitResult);
 		HitLocation = HitResult.ImpactPoint;
@@ -353,6 +353,8 @@ void UCombatComponent::InitializeCarriedAmmo()
 {
 	// добавим значение в карту
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
+	// 7.1 добавим значение в карту
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingRLAmmo);
 }
 
 void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)

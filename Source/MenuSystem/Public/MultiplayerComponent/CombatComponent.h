@@ -164,6 +164,9 @@ protected:
 	// пока временное значение для CarriedAmmo для оружия
 	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingARAmmo = 30;
+	// 7.1 пока временное значение для CarriedAmmo для оружия
+	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
+	int32 StartingRLAmmo = 4;
 	// функция инцилизации CarriedAmmoMap, добавим туда тип оружия нашего 
 	void InitializeCarriedAmmo();
 

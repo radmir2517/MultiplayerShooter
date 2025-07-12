@@ -13,7 +13,7 @@
 AProjectile::AProjectile()
 {
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>("CollisionBox");
-	CollisionBox->SetupAttachment(GetRootComponent());
+	SetRootComponent(CollisionBox);
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionBox->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
