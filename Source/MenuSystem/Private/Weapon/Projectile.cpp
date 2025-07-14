@@ -34,7 +34,7 @@ AProjectile::AProjectile()
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HasAuthority())
+	if (CollisionBox)
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this,&AProjectile::OnHit);
 	}
