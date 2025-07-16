@@ -20,12 +20,6 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECR_Block);
 	CollisionBox->SetCollisionObjectType(ECC_WorldDynamic);
-	// установим компонент 
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
-	// вращение снаряда к его направлению скорости
-	ProjectileMovement-> bRotationFollowsVelocity = true;
-	ProjectileMovement-> InitialSpeed = 10000.f;
-	ProjectileMovement-> MaxSpeed = 10000.f;
 	
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;

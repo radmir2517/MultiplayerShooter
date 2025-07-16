@@ -4,6 +4,7 @@
 #include "Weapon/ProjectileBullet.h"
 
 #include "GameFramework/Character.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Interface/InteractWithCrosshairsInterface.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -13,6 +14,13 @@ AProjectileBullet::AProjectileBullet()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	// 9.1 установим компонент 
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
+	// 9.2 вращение снаряда к его направлению скорости
+	ProjectileMovement-> bRotationFollowsVelocity = true;
+	ProjectileMovement->SetIsReplicated(true);
+	ProjectileMovement-> InitialSpeed = 10000.f;
+	ProjectileMovement-> MaxSpeed = 10000.f;
 }
 
 // Called when the game starts or when spawned

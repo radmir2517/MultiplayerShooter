@@ -13,15 +13,54 @@ class MENUSYSTEM_API URocketMovementComponent : public UProjectileMovementCompon
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	URocketMovementComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+							   FActorComponentTickFunction* ThisTickFunction) override;
+protected:
+	virtual void BeginPlay() override;
+	// 9.1 переопредилим функцию определение столкновение и остановки движения
+	virtual EHandleBlockingHitResult HandleBlockingHit(const FHitResult& Hit, float TimeTick, const FVector& MoveDelta, float& SubTickTimeRemaining) override;
+	// 9.2 просто переопределим, оставим суперскуую функцию 
+	virtual void HandleImpact(const FHitResult& Hit, float TimeSlice = 0, const FVector& MoveDelta = FVector::ZeroVector) override;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

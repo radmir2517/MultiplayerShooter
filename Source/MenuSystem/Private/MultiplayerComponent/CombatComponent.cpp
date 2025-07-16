@@ -46,7 +46,6 @@ void UCombatComponent::BeginPlay()
 			InitializeCarriedAmmo();
 		}
 	}
-	
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -61,7 +60,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		ChangeFOVForAiming(DeltaTime);
 		SetHUDCrosshairs(DeltaTime);
 	}
-
 }
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
@@ -355,6 +353,8 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
 	// 7.1 добавим значение в карту
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingRLAmmo);
+	// 10.1 добавим запасные патроны для пистолета 
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPAmmo);
 }
 
 void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)

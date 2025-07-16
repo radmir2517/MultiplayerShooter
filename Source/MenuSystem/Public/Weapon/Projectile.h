@@ -29,9 +29,7 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBoxComponent> CollisionBox;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
+	
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> HitSound;

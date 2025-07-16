@@ -167,10 +167,10 @@ protected:
 	// 7.1 пока временное значение для CarriedAmmo для оружия
 	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingRLAmmo = 4;
+	// 10.1 Добавим патроны для пистолета
+	int32 StartingPAmmo = 15;
 	// функция инцилизации CarriedAmmoMap, добавим туда тип оружия нашего 
 	void InitializeCarriedAmmo();
-
-
 	
 };
 

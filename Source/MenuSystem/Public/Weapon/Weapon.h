@@ -86,13 +86,13 @@ protected:
 	void OnRep_WeaponState();
 	
 	
-	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category="Weapon")
 	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
-	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category="Weapon")
 	TObjectPtr<USphereComponent> AreaSphere;
-	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category="Weapon")
 	TObjectPtr<UWidgetComponent> PickUpWidgetComponent;
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category="Weapon Properties")
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category="Weapon")
 	TObjectPtr<UNiagaraComponent> NiagaraComponent;
 	// 7.1 Если нет эффекта ниагары, а есть эффект каскады.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
@@ -102,12 +102,12 @@ protected:
 
 	
 	// класс для гильзы
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TSubclassOf<ACasing> CasingClass;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	FName SocketNameOnWeapon = "FireSocket";
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	FName SocketNameForCasing = "AmmoEject";
 	
 	// состояние оружия по умолчанию у него будет EWC_Initial
@@ -116,9 +116,7 @@ protected:
 
 	// компонент который будет создан во время выполнения эффекта
 	TObjectPtr<UNiagaraComponent> FireEffect;
-
 	
-
 	//
 	// Crosshair прицел
 	//
@@ -139,23 +137,23 @@ protected:
 	// AutomaticFire
 	//
 	// задержка между выстрелами, для таймера
-	UPROPERTY(EditDefaultsOnly, Category=AutomaticFire)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	float FireDelay = 0.15f;
-	UPROPERTY(EditDefaultsOnly, Category=AutomaticFire)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	bool bIsAutomaticFire = true;
 	
 	// параметры FOV при прицеливания
-	UPROPERTY(EditDefaultsOnly, Category=FOV)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	float AimFOV = 30.f;
-	UPROPERTY(EditDefaultsOnly, Category=FOV)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	float InterpFOVSpeed = 10.f;
 
 	/*
 	 * WeaponAmmo
 	 */
-	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_WeaponAmmo, Category=Ammo)
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_WeaponAmmo, Category="Weapon Properties")
 	int32 WeaponAmmo = 30;
-	UPROPERTY(EditDefaultsOnly, Category=Ammo)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	int32 MaxWeaponAmmo = 30;
 	UPROPERTY()
 	AMultiplayerCharacter* MultiplayerCharacter;
@@ -175,7 +173,7 @@ protected:
 	/*
 	 *	CarriedAmmo
 	 */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly,Category="Weapon Properties")
 	EWeaponType WeaponType = EWeaponType::EWT_AssaultRifle;
 
 	/*

@@ -6,6 +6,7 @@
 #include "Projectile.h"
 #include "ProjectileRocket.generated.h"
 
+class URocketMovementComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
 
@@ -35,6 +36,9 @@ protected:
 	// 8.2 таймер для уничтожения снаряда, а пока он будет спавнить эффект дыма
 	UPROPERTY()
 	FTimerHandle TimerToDestroy;
+	// 9.1 установим тут новый наш компонент
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<URocketMovementComponent> RocketProjectileMovement;
 private:
 	// 8.3 функция запускания таймеров, уничтожение ракеты
 	UFUNCTION()

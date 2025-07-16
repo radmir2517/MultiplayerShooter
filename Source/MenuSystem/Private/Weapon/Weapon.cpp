@@ -21,6 +21,9 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = false;
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(GetRootComponent());
+	//9.1 сделаем движение реплицированным, что если он упадет то туда где у сервера
+	SetReplicateMovement(true);
+	
 	SetRootComponent(WeaponMesh);
 	
 	WeaponMesh->SetCollisionResponseToAllChannels(ECR_Block);
@@ -67,27 +70,6 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AWeapon,WeaponAmmo);
 }
 
-
-void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
-{
-	if (CasingClass)
-	{
-		UWorld* World =  GetWorld();
-		FTransform SocketCasingTransform = GetWeaponMesh()->GetSocketTransform(SocketNameForCasing,RTS_World);
-		
-		//FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon,RTS_World);
-		APawn* WeaponInstigator = Cast<APawn>(GetOwner());
-	
-		if (SocketCasingTransform.IsValid() )
-		{
-			FActorSpawnParameters SpawnParams;
-			// заспавним пулю
-			World->SpawnActor<ACasing>(CasingClass, SocketCasingTransform.GetLocation(),SocketCasingTransform.Rotator(), SpawnParams);
-		}	
-	}
-	// функция вычитания боеприпаса и показа его в Overlay.
-	SpendAmmo();
-}
 
 FHUDPackage AWeapon::GetHudPackage() const
 {
@@ -233,6 +215,28 @@ void AWeapon::StopFireEffect_Implementation()
 void AWeapon::OnRep_WeaponAmmo()
 {
 	SetHUDAmmo();
+}
+
+
+void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
+{
+	if (CasingClass)
+	{
+		UWorld* World =  GetWorld();
+		FTransform SocketCasingTransform = GetWeaponMesh()->GetSocketTransform(SocketNameForCasing,RTS_World);
+		
+		//FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon,RTS_World);
+		APawn* WeaponInstigator = Cast<APawn>(GetOwner());
+	
+		if (SocketCasingTransform.IsValid() )
+		{
+			FActorSpawnParameters SpawnParams;
+			// заспавним гильзу
+			World->SpawnActor<ACasing>(CasingClass, SocketCasingTransform.GetLocation(),SocketCasingTransform.Rotator(), SpawnParams);
+		}	
+	}
+	// функция вычитания боеприпаса и показа его в Overlay.
+	SpendAmmo();
 }
 
 void AWeapon::SpendAmmo()
