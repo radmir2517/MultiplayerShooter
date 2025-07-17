@@ -412,7 +412,6 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& InHitResult)
 		{
 			float DistanceToPlayer = (WorldPosition - MultiplayerCharacter->GetActorLocation()).Size();
 			WorldPosition = WorldPosition + WorldDirection * (DistanceToPlayer + 90.f) ;
-			DrawDebugSphere(GetWorld(), WorldPosition, 10, 10, FColor::Yellow);
 		}
 		
 		if (bIsDeeprojectctSuccess)
@@ -431,7 +430,6 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& InHitResult)
 			}
 			else 
 			{	// если столкновение есть, то нарисуем там сферу
-				DrawDebugSphere(GetWorld(),InHitResult.ImpactPoint,10.f,10,FColor::Red, false,4.f);
 			}
 			
 		}

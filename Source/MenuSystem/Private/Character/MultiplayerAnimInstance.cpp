@@ -107,8 +107,8 @@ void UMultiplayerAnimInstance::NativeUpdateAnimation(float DeltaTime)
 			RightHandRotation = FMath::RInterpTo(RightHandRotation,DeltaRotations,DeltaTime, 25.f); 
 			
 			FTransform MuzzleStart = MultiplayerCharacter->GetWeapon()->GetWeaponMesh()->GetSocketTransform("FireSocket");
-			DrawDebugLine(GetWorld(),MuzzleStart.GetLocation(),HitLocation,FColor::Blue,false,1.f);
-			DrawDebugLine(GetWorld(),MuzzleStart.GetLocation(),MuzzleStart.GetLocation() + FRotationMatrix(MuzzleStart.GetRotation().Rotator()).GetUnitAxis(EAxis::Y) * 1000.f,FColor::Green,false,1.f);
+			//DrawDebugLine(GetWorld(),MuzzleStart.GetLocation(),HitLocation,FColor::Blue,false,1.f);
+			//DrawDebugLine(GetWorld(),MuzzleStart.GetLocation(),MuzzleStart.GetLocation() + FRotationMatrix(MuzzleStart.GetRotation().Rotator()).GetUnitAxis(EAxis::Y) * 1000.f,FColor::Green,false,1.f);
 		}
 		else
 		{
