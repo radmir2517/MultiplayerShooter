@@ -169,6 +169,8 @@ protected:
 	int32 StartingRLAmmo = 4;
 	// 10.1 Добавим патроны для пистолета
 	int32 StartingPAmmo = 15;
+	// 12.1 Добавим патроны для пистолета
+	int32 StartingSMGAmmo = 30;
 	// функция инцилизации CarriedAmmoMap, добавим туда тип оружия нашего 
 	void InitializeCarriedAmmo();
 	

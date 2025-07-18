@@ -31,11 +31,14 @@ protected:
 	// 11.1 Трассер для пистолета
 	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	TObjectPtr<UParticleSystem> BeamParticles;
+
 	
 private:
 	// 11.2 Функция спавна эффекта для клиента
 	UFUNCTION(Client, Unreliable)
-	void Client_SpawnBeamEffect(const UObject* WorldContextObject, UParticleSystem* EmitterTemplate, FVector Start,FVector BeamEnd);
+	void Client_SpawnBeamEffect(const UObject* WorldContextObject, UParticleSystem* EmitterTemplate, FVector_NetQuantize Start,FVector_NetQuantize BeamEnd);
+	UFUNCTION(CLient, Unreliable)
+	void Client_SpawnHitEffectSound(const UObject* WorldContextObject, FVector_NetQuantize HitLocation);
 };
 
 

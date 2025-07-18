@@ -97,6 +97,10 @@ protected:
 	// 7.1 Если нет эффекта ниагары, а есть эффект каскады.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
 	TObjectPtr<UParticleSystem> SecondVariantFireEffect;
+
+	// 12.1 звук выстрела
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly , meta=(AllowPrivateAccess, Category="Weapon"))
+	TObjectPtr<USoundBase> OpenFireSound;
 	
 	TObjectPtr<UNiagaraSystem> NiagaraFireEffect;
 

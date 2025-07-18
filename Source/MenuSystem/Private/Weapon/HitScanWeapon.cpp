@@ -3,10 +3,8 @@
 
 #include "Weapon/HitScanWeapon.h"
 
-#include "NiagaraFunctionLibrary.h"
 #include "Character/MultiplayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
 
 
@@ -64,15 +62,17 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 			{	//10.4 применим урон, делает лишь сервер
 				UGameplayStatics::ApplyDamage(HitCharacter,HitScanDamage,InstigatorController,this,UDamageType::StaticClass());
 			}
-			if (HitEffect)
-			{ // спавн эффекта вызрыва при попадания снаряда об что то
-				UGameplayStatics::SpawnEmitterAtLocation(this,HitEffect,Hit.Location,Hit.ImpactNormal.Rotation());
-			}
-			if (HitSound)
-			{ // если есть звук, то воспроизвести
-				UGameplayStatics::PlaySoundAtLocation(this,HitSound,Hit.Location);
-			}
 		}
+		if (HitEffect)
+		{ // спавн эффекта вызрыва при попадания снаряда об что то
+			UGameplayStatics::SpawnEmitterAtLocation(this,HitEffect,Hit.Location,Hit.ImpactNormal.Rotation());
+		}
+		if (HitSound)
+		{ // если есть звук, то воспроизвести
+			UGameplayStatics::PlaySoundAtLocation(this,HitSound,Hit.Location);
+		}
+		// 12.1 поправим и сделаем отображение HitEffect и звука на клиенетах
+		Client_SpawnHitEffectSound(this,Hit.Location);
 	}
 	//11.2 проверим что назначена частица
 	if (BeamParticles && HasAuthority())
@@ -86,12 +86,26 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 	}
 }
 
-void AHitScanWeapon::Client_SpawnBeamEffect_Implementation(const UObject* WorldContextObject, UParticleSystem* EmitterTemplate, FVector Start,FVector InBeamEnd)
+void AHitScanWeapon::Client_SpawnBeamEffect_Implementation(const UObject* WorldContextObject, UParticleSystem* EmitterTemplate, FVector_NetQuantize Start,FVector_NetQuantize InBeamEnd)
 {
 	UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(WorldContextObject,BeamParticles,Start,FRotator::ZeroRotator);
 		
 	if (Beam)
 	{	// 11.4 назначим концу дыма координаты
 		Beam->SetVectorParameter(FName("Target"),InBeamEnd);
+	}
+}
+
+
+void AHitScanWeapon::Client_SpawnHitEffectSound_Implementation(const UObject* WorldContextObject,
+	 FVector_NetQuantize HitLocation)
+{
+	if (HitEffect)
+	{ // спавн эффекта вызрыва при попадания снаряда об что то
+		UGameplayStatics::SpawnEmitterAtLocation(this,HitEffect,HitLocation);
+	}
+	if (HitSound)
+	{ // если есть звук, то воспроизвести
+		UGameplayStatics::PlaySoundAtLocation(this,HitSound,HitLocation);
 	}
 }

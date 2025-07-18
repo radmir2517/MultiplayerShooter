@@ -623,8 +623,6 @@ void AMultiplayerCharacter::ServerEquipWeapon_Implementation()
 	CombatComponent->EquipWeapon(OverlappingWeapon);
 }
 
-
-
 void AMultiplayerCharacter::PlayReloadMontage()
 {
 	// проверим что EquipWeapon и получаем AnimInstance
@@ -636,6 +634,15 @@ void AMultiplayerCharacter::PlayReloadMontage()
 		switch (GetWeapon()->GetWeaponType())
 		{
 		case EWeaponType::EWT_AssaultRifle:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_RocketLauncher:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_Pistol:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_SMG:
 			SectionName = "Rifle";
 			break;
 		}

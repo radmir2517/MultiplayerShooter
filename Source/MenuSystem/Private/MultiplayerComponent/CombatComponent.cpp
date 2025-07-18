@@ -321,7 +321,7 @@ void UCombatComponent::WeaponStartFire()
 	// установим коэфф увеличение прицела при стрельбе
 	CrosshairShootingFactor = 0.75f;
 		
-	if (HitResult.bBlockingHit)
+	if (!HitResult.ImpactPoint.IsNearlyZero())
 	{
 		//HitTarget = HitResult.ImpactPoint;
 		Fire(bIsFirePressed, HitLocation);
@@ -355,6 +355,8 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingRLAmmo);
 	// 10.1 добавим запасные патроны для пистолета 
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPAmmo);
+	// 12.1 добавим запасные патроны для пистолета 
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_SMG, StartingSMGAmmo);
 }
 
 void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)
