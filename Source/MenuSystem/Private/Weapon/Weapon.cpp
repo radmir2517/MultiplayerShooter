@@ -151,6 +151,13 @@ void AWeapon::SetWeaponState(EWeaponState InWeaponState)
 		GetWeaponMesh()->SetEnableGravity(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//13.1 Добавим включение физики для узи, чтобы ремешок его работал
+		if (WeaponType == EWeaponType::EWT_SMG)
+		{
+			GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+			GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			GetWeaponMesh()->SetEnableGravity(true);
+		}
 		break;
 		
 	case EWeaponState::EWC_Dropped:
@@ -161,6 +168,9 @@ void AWeapon::SetWeaponState(EWeaponState InWeaponState)
 		GetWeaponMesh()->SetSimulatePhysics(true);
 		GetWeaponMesh()->SetEnableGravity(true);
 		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		//13.2 Добавим 2 строки чтобы потом узи тоже после dropped реагировала на все кроме игроков
+		GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Block);
+		GetWeaponMesh()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
 		break;
 	}
 }
