@@ -104,6 +104,9 @@ public:
 
 	// 5.1 получение булевой выключения управление и вращения когда GameState == Cooldown
 	bool IsDisabledGameplay();
+	// 1
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool isAiming);
 protected:
 	virtual void BeginPlay() override;
 	// функция, которая будет скрывать персонажа и оружие когда камера будет близко к игроку
@@ -123,6 +126,8 @@ protected:
 
 	// функция которая запускатся при окончании ElimTimer после смерти
 	void ElimTimerFinisher();
+
+	
 
 
 	

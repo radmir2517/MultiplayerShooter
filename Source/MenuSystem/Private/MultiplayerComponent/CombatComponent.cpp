@@ -161,6 +161,7 @@ void UCombatComponent::ChangeFOVForAiming(float DeltaTime)
 }
 
 
+
 void UCombatComponent::EquipWeapon(AWeapon* InWeapon)
 {	// проверим что не нулевые
 	if (!IsValid(MultiplayerCharacter) || !IsValid(InWeapon)) return;
@@ -252,13 +253,20 @@ void UCombatComponent::ServerSetIsAiming_Implementation(bool InbAim)
 	}
 }
 
-void UCombatComponent::SetIsAiming(bool InbAim)
+void UCombatComponent::SetIsAiming(bool bInAim)
 {
-	bIsAiming = InbAim;
+	if (GetWeapon() == nullptr) return;
+	
+	bIsAiming = bInAim;
 	// если целимся, то назначаем скорость другую
 	if (MultiplayerCharacter)
 	{
 		MultiplayerCharacter->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+	// 16.1 при нажатии на прицел мы включим функцию добавление виджета и воспроизведение анимации виджета прицела
+	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled() && GetWeapon()->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	{
+		MultiplayerCharacter->ShowSniperScopeWidget(bIsAiming);
 	}
 }
 
@@ -357,6 +365,10 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPAmmo);
 	// 12.1 добавим запасные патроны для пистолета 
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SMG, StartingSMGAmmo);
+	// 13.1 добавим запасные патроны для пистолета 
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_Shotgun, StartingShotgunAmmo);
+	// 15.1 добавим запасные патроны для снайперской винтовки 
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_SniperRifle, StartingSniperRifleAmmo);
 }
 
 void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)
@@ -460,6 +472,38 @@ void UCombatComponent::HandleReload()
 	MultiplayerCharacter->PlayReloadMontage();
 }
 
+void AMultiplayerCharacter::PlayReloadMontage()
+{
+	// проверим что EquipWeapon и получаем AnimInstance
+	UAnimInstance* AnimInstance =  GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{	// запускаем монтаж и в зависимости прицеливаемся мы или нет мы переходим к слоту
+		AnimInstance->Montage_Play(ReloadMontage,1.f);
+		FName SectionName;
+		switch (GetWeapon()->GetWeaponType())
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_RocketLauncher:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_Pistol:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_SMG:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_Shotgun:
+			SectionName = "Rifle";
+			break;
+		case EWeaponType::EWT_SniperRifle:
+			SectionName = "Rifle";
+			break;;
+		}
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
 void UCombatComponent::OnRep_CombatState()
 {
 	if (!IsValid(MultiplayerCharacter)) return;

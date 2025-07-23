@@ -15,7 +15,6 @@ class AMultiplayerPlayerController;
 class AWeapon;
 class AMultiplayerCharacter;
 
-#define  TRACE_LENGHT 60000.f
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class MENUSYSTEM_API UCombatComponent : public UActorComponent
@@ -34,7 +33,7 @@ public:
 	FORCEINLINE AMultiplayerCharacter* GetMultiplayerCharacter() { return MultiplayerCharacter; }
 	FORCEINLINE AWeapon* GetWeapon() {return Weapon;}
 	FORCEINLINE bool GetIsAiming() {return bIsAiming;}
-	void SetIsAiming(bool InbAim);
+	void SetIsAiming(bool bInAim);
 	UFUNCTION(Server, Reliable)
 	void ServerSetIsAiming(bool InbAim);
 	// функция вызыва
@@ -78,7 +77,8 @@ public:
 	int32 AmountToReload();
 	// пополнение магазина и обновление переменных у клиента и в Overlay
 	void UpdateAmmoValue();
-	
+
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -88,6 +88,8 @@ protected:
 	void SetHUDCrosshairs(float DeltaTime);
 	// изменения FOV при прицеливания
 	void ChangeFOVForAiming(float DeltaTime);
+	
+
 
 	//
 	//Автоматический огонь
@@ -171,6 +173,10 @@ protected:
 	int32 StartingPAmmo = 15;
 	// 12.1 Добавим патроны для пистолета
 	int32 StartingSMGAmmo = 30;
+	// 13.1 Добавим патроны для дробовика
+	int32 StartingShotgunAmmo = 6;
+	// 15.1 Добавим патроны для cнайперской винтовки
+	int32 StartingSniperRifleAmmo = 5;
 	// функция инцилизации CarriedAmmoMap, добавим туда тип оружия нашего 
 	void InitializeCarriedAmmo();
 	

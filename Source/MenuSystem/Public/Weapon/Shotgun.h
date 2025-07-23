@@ -12,14 +12,13 @@ class MENUSYSTEM_API AShotgun : public AHitScanWeapon
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AShotgun();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void OpenFire(const FVector_NetQuantize& TargetPoint) override;
 
+	
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 };

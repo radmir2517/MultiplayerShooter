@@ -623,32 +623,7 @@ void AMultiplayerCharacter::ServerEquipWeapon_Implementation()
 	CombatComponent->EquipWeapon(OverlappingWeapon);
 }
 
-void AMultiplayerCharacter::PlayReloadMontage()
-{
-	// проверим что EquipWeapon и получаем AnimInstance
-	UAnimInstance* AnimInstance =  GetMesh()->GetAnimInstance();
-	if (AnimInstance)
-	{	// запускаем монтаж и в зависимости прицеливаемся мы или нет мы переходим к слоту
-		AnimInstance->Montage_Play(ReloadMontage,1.f);
-		FName SectionName;
-		switch (GetWeapon()->GetWeaponType())
-		{
-		case EWeaponType::EWT_AssaultRifle:
-			SectionName = "Rifle";
-			break;
-		case EWeaponType::EWT_RocketLauncher:
-			SectionName = "Rifle";
-			break;
-		case EWeaponType::EWT_Pistol:
-			SectionName = "Rifle";
-			break;
-		case EWeaponType::EWT_SMG:
-			SectionName = "Rifle";
-			break;
-		}
-		AnimInstance->Montage_JumpToSection(SectionName);
-	}
-}
+
 
 // 5.3 получение булевой выключения управление и вращения когда GameState == Cooldown
 bool AMultiplayerCharacter::IsDisabledGameplay()
