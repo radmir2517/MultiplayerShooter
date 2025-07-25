@@ -26,36 +26,39 @@ protected:
 	// 7.1 функция пересечения снаряда
 	virtual void OnHit(UPrimitiveComponent* HitComponent,AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
-	// 8.1 Сделаем указатели на эффект следа ракеты и для звука
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UNiagaraSystem> RocketTrailEffect;
+
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> RocketMovementSoundLoop;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundAttenuation> RocketLoopAttenuation;
+	/*
+	*	// 8.1 Сделаем указатели на эффект следа ракеты и для звука
+	//UPROPERTY(EditDefaultsOnly)  //  улетел в projectile
+	//TObjectPtr<UNiagaraSystem> RocketTrailEffect; // улетел в projectile
 	// 8.2 таймер для уничтожения снаряда, а пока он будет спавнить эффект дыма
-	UPROPERTY()
-	FTimerHandle TimerToDestroy;
+	//UPROPERTY() //  улетел в projectile
+	//TimerHandle TimerToDestroy; //  улетел в projectile*/
+
 	// 9.1 установим тут новый наш компонент
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<URocketMovementComponent> RocketProjectileMovement;
 private:
+	/*
 	// 8.3 функция запускания таймеров, уничтожение ракеты
-	UFUNCTION()
-	void TimerDestroyedFinished();
+	//UFUNCTION() //  улетел в projectile
+	//void TimerDestroyedFinished(); //  улетел в projectile
 	// 8.4 время до уничтожения
-	UPROPERTY(EditDefaultsOnly)
-	float DestroyTime = 3.f;
+	//UPROPERTY(EditDefaultsOnly) //  улетел в projectile
+	//float DestroyTime = 3.f; //  улетел в projectile
 
+	// 8.5 Сюда запишем указатель на спавнящий эффект чтобы при столкновении его убрать
+	//UPROPERTY() // улетел в projectile
+	//UNiagaraComponent* RocketTrailEffectComponent; // улетел в projectile
+	// 8.6 Сюда запишем указатель на спавнящий звук чтобы при столкновении его убрать*/
 	
 	//7.2 создадим сетку для снаряда
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
-
-	// 8.5 Сюда запишем указатель на спавнящий эффект чтобы при столкновении его убрать
-	UPROPERTY()
-	UNiagaraComponent* RocketTrailEffectComponent;
-	// 8.6 Сюда запишем указатель на спавнящий звук чтобы при столкновении его убрать
+	TObjectPtr<UStaticMeshComponent> ProjectileMeshComponent;
 	UPROPERTY()
 	UAudioComponent* RocketLoopSoundComponent;
 };

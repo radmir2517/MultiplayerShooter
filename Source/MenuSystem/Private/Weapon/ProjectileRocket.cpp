@@ -14,8 +14,8 @@
 AProjectileRocket::AProjectileRocket()
 {
 	//7.3 создадим сетку для снаряда
-	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMeshComponent->SetupAttachment(CollisionBox);
+	ProjectileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	ProjectileMeshComponent->SetupAttachment(CollisionBox);
 
 	// 9.1 установим компонент 
 	RocketProjectileMovement = CreateDefaultSubobject<URocketMovementComponent>("RocketProjectileMovement");
@@ -31,11 +31,11 @@ AProjectileRocket::AProjectileRocket()
 void AProjectileRocket::BeginPlay()
 {
 	Super::BeginPlay();
-	// 8.1.3 запустим эффект дыма
-	if (RocketTrailEffect)
-	{
+	/*// 8.1.3 запустим эффект дыма
+	if (RocketTrailEffect) //  улетел в projectile
+	{	//  улетел в projectile
 		RocketTrailEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(RocketTrailEffect,GetRootComponent(),FName(),GetActorLocation(),GetActorRotation(),EAttachLocation::KeepWorldPosition,false);
-	}
+	}*/
 	if (RocketMovementSoundLoop)
 	{// 8.1.4 запустим звук ракеты летящей
 		RocketLoopSoundComponent = UGameplayStatics::SpawnSoundAttached(RocketMovementSoundLoop,GetRootComponent(),
@@ -59,9 +59,9 @@ void AProjectileRocket::Tick(float DeltaTime)
 }
 
 void AProjectileRocket::Destroyed()
-{
-	if (RocketTrailEffectComponent)
-	{
+{	// 9.4 Если уничтожается то уничтожим след, это произойдет после таймера
+	if (RocketTrailEffectComponent) //  улетел в projectile
+	{//  улетел в projectile
 		RocketTrailEffectComponent->DestroyComponent();
 	}
 }
@@ -105,9 +105,9 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	{
 		RocketLoopSoundComponent->Deactivate();
 	}
-	if (StaticMeshComponent)
+	if (ProjectileMeshComponent)
 	{ // 8.3 после столкнвоения уберем видимость снаряда
-		StaticMeshComponent->SetVisibility(false);
+		ProjectileMeshComponent->SetVisibility(false);
 	}
 	if (RocketProjectileMovement)
 	{	// 8.4 после столкновения уберем движения снаряда
@@ -123,8 +123,5 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	}
 }
 
-void AProjectileRocket::TimerDestroyedFinished()
-{
-	Destroy();
-}
+
 

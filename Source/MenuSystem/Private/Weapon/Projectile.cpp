@@ -4,9 +4,9 @@
 
 #include "Weapon/Projectile.h"
 
-#include "Character/MultiplayerCharacter.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/BoxComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "MenuSystem/MenuSystem.h"
 
@@ -32,6 +32,12 @@ void AProjectile::BeginPlay()
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this,&AProjectile::OnHit);
 	}
+	
+	// 8.1.3 запустим эффект дыма
+	if (RocketTrailEffect) //  улетел в projectile
+	{	//  улетел в projectile
+		RocketTrailEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(RocketTrailEffect,GetRootComponent(),FName(),GetActorLocation(),GetActorRotation(),EAttachLocation::KeepWorldPosition,false);
+	}
 }
 
 void AProjectile::Tick(float DeltaTime)
@@ -42,8 +48,8 @@ void AProjectile::Tick(float DeltaTime)
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                         FVector NormalImpulse, const FHitResult& Hit)
 {
-	// устарело, т.к мы выполняем его в OnRep_Health и в ReceiveDamage()
-	/*AMultiplayerCharacter* MultiplayerCharacter = Cast<AMultiplayerCharacter>(OtherActor);
+	/*// устарело, т.к мы выполняем его в OnRep_Health и в ReceiveDamage()
+	AMultiplayerCharacter* MultiplayerCharacter = Cast<AMultiplayerCharacter>(OtherActor);
 	if (MultiplayerCharacter)
 	{
 		MultiplayerCharacter->MulticastHitMontagePlay();
@@ -61,9 +67,18 @@ void AProjectile::Destroyed()
 	{ // если есть звук, то воспроизвести
 		UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation());
 	}
+	// 17,1 перенесем с rocket. Чтобы воспользоваться в Grenade
+	if (RocketTrailEffectComponent) 
+	{
+		RocketTrailEffectComponent->DestroyComponent();
+	}
 	Super::Destroyed();
 }
 
+void AProjectile::TimerDestroyedFinished()
+{
+	Destroy();
+}
 
 
 

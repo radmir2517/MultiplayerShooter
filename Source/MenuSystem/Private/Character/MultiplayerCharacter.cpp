@@ -339,6 +339,11 @@ void AMultiplayerCharacter::MulticastElim_Implementation()
 		//MultiplayerPlayerController->SetInputMode(ModeUI);
 		MultiplayerPlayerController->SetHUDWeaponAmmo(0);
 	}
+	//16.1 При смерти в прицеле то уберем анимацию прицела
+	if (IsLocallyControlled() && GetWeapon() && GetWeapon()->GetWeaponType() == EWeaponType::EWT_SniperRifle )
+	{
+		ShowSniperScopeWidget(false);
+	}
 	
 	// отключим Передвижение и реагирование на нажатия
 	GetCharacterMovement()->DisableMovement();
@@ -360,6 +365,7 @@ void AMultiplayerCharacter::MulticastElim_Implementation()
 	ElimParticleSpawnPoint += FVector(0, 0, 200);
 	ElimBotParticleComponent = UGameplayStatics::SpawnEmitterAtLocation(this,ElimBotParticle,ElimParticleSpawnPoint,GetActorRotation());
 	UGameplayStatics::SpawnSoundAtLocation(this, ElimSound,ElimParticleSpawnPoint,GetActorRotation());
+
 	
 }
 

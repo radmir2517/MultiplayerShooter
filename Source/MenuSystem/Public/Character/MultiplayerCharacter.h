@@ -104,7 +104,7 @@ public:
 
 	// 5.1 получение булевой выключения управление и вращения когда GameState == Cooldown
 	bool IsDisabledGameplay();
-	// 1
+	// 16.1 функция которая создаст виджет и воспроизвете анимацию появление прицела
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool isAiming);
 protected:

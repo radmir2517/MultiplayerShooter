@@ -6,6 +6,8 @@
 #include "Projectile.generated.h"
 
 
+class UNiagaraComponent;
+class UNiagaraSystem;
 class UProjectileMovementComponent;
 class UBoxComponent;
 
@@ -30,7 +32,6 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBoxComponent> CollisionBox;
 	
-
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> HitSound;
 
@@ -39,6 +40,23 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 20.f;
+
+	UPROPERTY(EditDefaultsOnly)  
+	TObjectPtr<UNiagaraSystem> RocketTrailEffect;
+
+	//17.1 Сюда запишем указатель на спавнящий эффект чтобы при столкновении его убрать
+	UPROPERTY() // улетел projectile
+	UNiagaraComponent* RocketTrailEffectComponent; // улетел projectile
+	// 17.2 таймер для уничтожения снаряда, а пока он будет спавнить эффект дыма
+	UPROPERTY() 
+	FTimerHandle TimerToDestroy;
+
+	// 8.3 функция запускания таймеров, уничтожение ракеты
+	UFUNCTION()
+	void TimerDestroyedFinished();
+	// 8.4 время до уничтожения
+	UPROPERTY(EditDefaultsOnly)
+	float DestroyTime = 3.f;
 };
 
 

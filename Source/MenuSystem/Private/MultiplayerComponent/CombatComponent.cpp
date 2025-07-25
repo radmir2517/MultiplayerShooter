@@ -264,7 +264,7 @@ void UCombatComponent::SetIsAiming(bool bInAim)
 		MultiplayerCharacter->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 	// 16.1 при нажатии на прицел мы включим функцию добавление виджета и воспроизведение анимации виджета прицела
-	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled() && GetWeapon()->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled() && GetWeapon() && GetWeapon()->GetWeaponType() == EWeaponType::EWT_SniperRifle)
 	{
 		MultiplayerCharacter->ShowSniperScopeWidget(bIsAiming);
 	}
@@ -369,6 +369,8 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Shotgun, StartingShotgunAmmo);
 	// 15.1 добавим запасные патроны для снайперской винтовки 
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SniperRifle, StartingSniperRifleAmmo);
+	// 17.1 добавим запасные патроны для запускателя гранат 
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_GrenadeLauncher, StartingGrenadeLauncherAmmo);
 }
 
 void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)
