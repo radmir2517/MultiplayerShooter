@@ -38,6 +38,7 @@ public:
 	FORCEINLINE AMultiplayerCharacter* GetMultiplayerCharacter() { return MultiplayerCharacter; }
 	FORCEINLINE AWeapon* GetWeapon() { return Weapon; }
 	FORCEINLINE bool GetIsAiming() { return bIsAiming; }
+	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
 	void SetIsAiming(bool bInAim);
 	UFUNCTION(Server, Reliable)
 	void ServerSetIsAiming(bool InbAim);
@@ -70,8 +71,8 @@ public:
 	void Reload();
 	UFUNCTION(Server, Reliable)
 	void Server_Reload();
-
 	void HandleReload();
+	
 
 	UFUNCTION()
 	void OnRep_CombatState();
@@ -82,6 +83,22 @@ public:
 	int32 AmountToReload();
 	// пополнение магазина и обновление переменных у клиента и в Overlay
 	void UpdateAmmoValue();
+	//18.1 Функция перезарядки вызываемая в ABPAnimInstance
+	UFUNCTION(BlueprintCallable)
+	void ShotgunReloading();
+	//18.2 функция пополнения мгазаина по 1 патрону в дробовике и показания это в hud
+	void UpdateShotgunAmmoValue();
+
+	//19.1 запуск функции броска гранаты при нажатии кнопки броска
+	void ThrowGrenade();
+	// 19.2 Запуск изменения состояние на сервере
+	UFUNCTION(Server,Reliable)
+	void Server_ThrowGrenade();
+	// 19.3 тут будет запуск анимации ан клиентах и на сервере
+	void HandleThrowGrenade();
+	// 19.4 окончания анимации броска гранаты для возврата состояния
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
 
 protected:
 	virtual void BeginPlay() override;
@@ -92,7 +109,6 @@ protected:
 	void SetHUDCrosshairs(float DeltaTime);
 	// изменения FOV при прицеливания
 	void ChangeFOVForAiming(float DeltaTime);
-
 
 	//
 	//Автоматический огонь
@@ -117,6 +133,7 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Weapon, BlueprintReadOnly)
 	TObjectPtr<AWeapon> Weapon;
+	
 
 	UPROPERTY(Replicated)
 	bool bIsAiming;
@@ -173,17 +190,32 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingRLAmmo = 4;
 	// 10.1 Добавим патроны для пистолета
-	int32 StartingPAmmo = 15;
+	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
+	int32 StartingPistolAmmo = 15;
 	// 12.1 Добавим патроны для пистолета
+	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingSMGAmmo = 30;
 	// 13.1 Добавим патроны для дробовика
-	int32 StartingShotgunAmmo = 6;
+	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
+	int32 StartingShotgunAmmo = 12;
 	// 15.1 Добавим патроны для cнайперской винтовки
+	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingSniperRifleAmmo = 5;
 	// 17.1 Добавим патроны для Запускателя гранат
+	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingGrenadeLauncherAmmo = 5;
 	// функция инцилизации CarriedAmmoMap, добавим туда тип оружия нашего 
 	void InitializeCarriedAmmo();
+
+private:
+	bool bIsStartingReloading = false;
+
+	// 20.1 функции созданные для EquipWeapon для сокращения написания кода в EquipWeapon
+	void DropWeapon();
+	void GetAndUpdateHudCarriedAmmo();
+	void SpawnPickUpSound();
+	void ReloadAmmoIfEmpty();
+	void AttackWeaponAtSocket(FName SocketName);
 };
 
 

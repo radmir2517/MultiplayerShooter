@@ -32,11 +32,10 @@ void AProjectile::BeginPlay()
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this,&AProjectile::OnHit);
 	}
-	
 	// 8.1.3 запустим эффект дыма
-	if (RocketTrailEffect) //  улетел в projectile
-	{	//  улетел в projectile
-		RocketTrailEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(RocketTrailEffect,GetRootComponent(),FName(),GetActorLocation(),GetActorRotation(),EAttachLocation::KeepWorldPosition,false);
+	if (ProjectileTrailEffect) 
+	{	
+		ProjectileTrailEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(ProjectileTrailEffect,GetRootComponent(),FName(),GetActorLocation(),GetActorRotation(),EAttachLocation::KeepWorldPosition,false);
 	}
 }
 
@@ -68,9 +67,9 @@ void AProjectile::Destroyed()
 		UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation());
 	}
 	// 17,1 перенесем с rocket. Чтобы воспользоваться в Grenade
-	if (RocketTrailEffectComponent) 
+	if (ProjectileTrailEffectComponent) 
 	{
-		RocketTrailEffectComponent->DestroyComponent();
+		ProjectileTrailEffectComponent->DestroyComponent();
 	}
 	Super::Destroyed();
 }
@@ -80,6 +79,31 @@ void AProjectile::TimerDestroyedFinished()
 	Destroy();
 }
 
+void AProjectile::ApplyExplodeDamage()
+{	//17.1 пересли с Rocket и сделали общим
+	// 7.1 получим контроллер
+	const APawn* FiringPawn = GetInstigator();
+	// 8.1.2 т.к это теперь у клиента также срабатывает урон будет лишь у сервера регистрироваться
+	if (FiringPawn && HasAuthority())
+	{	
+		AController* FiringController = FiringPawn->GetController();
+		if (FiringController)
+		{	// 7.2 применим урон зависящий в расстояние от взрыва
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				this,
+				Damage,
+				10.f,
+				GetActorLocation(),
+				DamageInnerRadius,
+				DamageOuterRadius,
+				1.f,
+				UDamageType::StaticClass(),
+				TArray<AActor*>(),
+				this,
+				FiringController);
+		}
+	}
+}
 
 
 

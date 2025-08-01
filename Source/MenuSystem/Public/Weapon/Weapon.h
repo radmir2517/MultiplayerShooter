@@ -69,6 +69,7 @@ public:
 
 	// функция которая будет проверять равен ли кол-во патронов 0
 	bool IsEmpty();
+	bool IsFullAmmo();
 
 	UFUNCTION(BLueprintCallable, NetMulticast, Unreliable)
 	void PlayFireEffect();
@@ -84,6 +85,8 @@ protected:
 	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	UFUNCTION()
 	void OnRep_WeaponState();
+	//19.1 включение/выключение влияние CustomDepth постпроцесса на оружие
+	void SetRenderCustomDepth(bool bSetEnabled);
 	
 	
 	UPROPERTY(VisibleAnywhere, Category="Weapon")

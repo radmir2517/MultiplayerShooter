@@ -4,7 +4,6 @@
 #include "Weapon/ProjectileRocket.h"
 
 #include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -24,7 +23,6 @@ AProjectileRocket::AProjectileRocket()
 	RocketProjectileMovement->SetIsReplicated(true);
 	RocketProjectileMovement-> InitialSpeed = 1500.f;
 	RocketProjectileMovement-> MaxSpeed = 1500.f;
-	
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -60,9 +58,9 @@ void AProjectileRocket::Tick(float DeltaTime)
 
 void AProjectileRocket::Destroyed()
 {	// 9.4 Если уничтожается то уничтожим след, это произойдет после таймера
-	if (RocketTrailEffectComponent) //  улетел в projectile
-	{//  улетел в projectile
-		RocketTrailEffectComponent->DestroyComponent();
+	if (ProjectileTrailEffectComponent) 
+	{
+		ProjectileTrailEffectComponent->DestroyComponent();
 	}
 }
 
@@ -73,28 +71,8 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	{ // 9.3 Если столкнется с владельцем то не взрываем
 		return;
 	}
-	// 7.1 получим контроллер
-	const APawn* FiringPawn = GetInstigator();
-	// 8.1.2 т.к это теперь у клиента также срабатывает урон будет лишь у сервера регистрироваться
-	if (FiringPawn && HasAuthority())
-	{	
-		AController* FiringController = FiringPawn->GetController();
-		if (FiringController)
-		{	// 7.2 применим урон зависящий в расстояние от взрыва
-			UGameplayStatics::ApplyRadialDamageWithFalloff(
-		this,
-		Damage,
-		10.f,
-		GetActorLocation(),
-		200.f,
-		500.f,
-		1.f,
-		UDamageType::StaticClass(),
-		TArray<AActor*>(),
-		this,
-		FiringController);
-		}
-	}
+	// 17.1 урон на расстояние сделали функцией и перенсли в базовой класс для других классов
+	ApplyExplodeDamage();
 	// 8.1 установим таймер на уничтожения снаряда
 	if (HasAuthority())
 	{

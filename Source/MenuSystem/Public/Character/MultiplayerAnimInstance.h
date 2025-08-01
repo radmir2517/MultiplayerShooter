@@ -98,6 +98,9 @@ private:
 
 	//5.1 булевая когда игра закончилась, чтобы перестать вращать руку
 	bool bDisableGameplay = false;
+	
+	UPROPERTY(BlueprintReadOnly, Category= Movement, meta = (AllowPrivateAccess = "true"))
+	bool bTransformRightHand = false;
 };
 
 

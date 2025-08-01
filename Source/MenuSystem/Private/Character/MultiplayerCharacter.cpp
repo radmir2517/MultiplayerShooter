@@ -131,6 +131,8 @@ void AMultiplayerCharacter::Destroyed()
 	Super::Destroyed();
 }
 
+
+
 void AMultiplayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -639,4 +641,14 @@ bool AMultiplayerCharacter::IsDisabledGameplay()
 		return MultiplayerPlayerController->IsDisableGameplay();
 	}
 	return false;
+}
+
+
+void AMultiplayerCharacter::PlayThrowGrenadeMontage()
+{
+	UAnimInstance* AnimInstance =  GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{	// запускаем монтаж броска гранаты
+		AnimInstance->Montage_Play(GrenadeThrowMontage,1.f);
+	}
 }

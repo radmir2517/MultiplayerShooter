@@ -107,6 +107,16 @@ public:
 	// 16.1 функция которая создаст виджет и воспроизвете анимацию появление прицела
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool isAiming);
+
+	//18.2 запустим монтаж гранаты
+	void PlayThrowGrenadeMontage();
+
+
+	// 20.2 названия сокетов на руках для оружия
+	UPROPERTY(EditDefaultsOnly)
+	FName RightHandSocketName = "RightHandSocket";
+	UPROPERTY(EditDefaultsOnly)
+	FName LeftHandSocketName = "LeftHandSocket";
 protected:
 	virtual void BeginPlay() override;
 	// функция, которая будет скрывать персонажа и оружие когда камера будет близко к игроку
@@ -126,9 +136,6 @@ protected:
 
 	// функция которая запускатся при окончании ElimTimer после смерти
 	void ElimTimerFinisher();
-
-	
-
 
 	
 	// стрела для камеры
@@ -152,6 +159,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category = "Animation")
 	TObjectPtr<UAnimMontage> ElimMontage;
+	// 18.1 Установим монтаж броска гранаты
+	UPROPERTY(EditDefaultsOnly,Category = "Animation")
+	TObjectPtr<UAnimMontage> GrenadeThrowMontage;
 	
 	//
 	// AimOffset
@@ -236,6 +246,7 @@ protected:
 	 *
 	 */
 	AMultiplayerPlayerState* MultiplayerPlayerState;
+	
 private:
 	
 	UFUNCTION()

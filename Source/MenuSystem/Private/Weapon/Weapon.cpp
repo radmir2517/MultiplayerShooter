@@ -3,12 +3,15 @@
 
 #include "Weapon/Weapon.h"
 
+#include "MeshPassProcessor.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Character/MultiplayerCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/MultiplayerHUD.h"
+#include "MenuSystem/MenuSystem.h"
+#include "MultiplayerComponent/CombatComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/MultiplayerPlayerController.h"
 #include "Weapon/Casing.h"
@@ -41,6 +44,10 @@ AWeapon::AWeapon()
 
 	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("NiagaraComponent");
 	NiagaraComponent->SetupAttachment(RootComponent);
+	//19.1 добавим подсветку предмета с помощью PostProcessVolume и материала добавленный в него
+	WeaponMesh->SetRenderCustomDepth(true);
+	WeaponMesh->CustomDepthStencilValue = CUSTOM_DEPTH_BLUE;
+	WeaponMesh->MarkRenderStateDirty();
 }
 
 void AWeapon::BeginPlay()
@@ -158,6 +165,8 @@ void AWeapon::SetWeaponState(EWeaponState InWeaponState)
 			GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			GetWeaponMesh()->SetEnableGravity(true);
 		}
+		// 19.3 выключим подсветку т.к оружие в руках
+		SetRenderCustomDepth(false);
 		break;
 		
 	case EWeaponState::EWC_Dropped:
@@ -171,6 +180,8 @@ void AWeapon::SetWeaponState(EWeaponState InWeaponState)
 		//13.2 Добавим 2 строки чтобы потом узи тоже после dropped реагировала на все кроме игроков
 		GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Block);
 		GetWeaponMesh()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
+		// 19.4 включим подсветку т.к оружие уже не в руках
+		SetRenderCustomDepth(true);
 		break;
 	}
 }
@@ -185,14 +196,23 @@ void AWeapon::OnRep_WeaponState()
 		GetWeaponMesh()->SetEnableGravity(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// 19.3 выключим подсветку т.к оружие в руках
+		SetRenderCustomDepth(false);
 		break;
 		// если оружие должно упасть при смерти то включим физику и коллизии
 	case EWeaponState::EWC_Dropped:
 		GetWeaponMesh()->SetSimulatePhysics(true);
 		GetWeaponMesh()->SetEnableGravity(true);
 		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		// 19.4 включим подсветку т.к оружие уже не в руках
+		SetRenderCustomDepth(true);
 		break;
 	}
+}
+//19.2 включение/выключение влияние CustomDepth постпроцесса на оружие
+void AWeapon::SetRenderCustomDepth(bool bSetEnabled)
+{
+	WeaponMesh->SetRenderCustomDepth(bSetEnabled);
 }
 
 void AWeapon::PlayFireEffect_Implementation()
@@ -225,8 +245,18 @@ void AWeapon::StopFireEffect_Implementation()
 void AWeapon::OnRep_WeaponAmmo()
 {
 	SetHUDAmmo();
+	if (WeaponType == EWeaponType::EWT_Shotgun)
+	{	//18.1 проверим патроны у дробовика и если они полные отправимся в последний кусок анимации
+		if (IsFullAmmo())
+		{
+			if (MultiplayerCharacter &&
+			MultiplayerCharacter->GetMesh())
+			{
+				MultiplayerCharacter->GetMesh()->GetAnimInstance()->Montage_JumpToSection("ShotgunReloadingFinished");
+			}
+		}
+	}
 }
-
 
 void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 {
@@ -279,6 +309,11 @@ bool AWeapon::IsEmpty()
 		return true;
 	}
 	return false;
+}
+
+bool AWeapon::IsFullAmmo()
+{
+	return WeaponAmmo >= MaxWeaponAmmo;
 }
 
 void AWeapon::ShowPickUpWidget(bool bVisibilityWidget)

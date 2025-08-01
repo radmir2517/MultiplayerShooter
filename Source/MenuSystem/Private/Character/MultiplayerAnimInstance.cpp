@@ -123,6 +123,7 @@ void UMultiplayerAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	// для отключения Fabroc при перезардке
 	bIsReloading = MultiplayerCharacter->GetCombatComponent()->CombatState == ECombatState::ECT_Reloading;
 	bDisableGameplay = MultiplayerCharacter->IsDisabledGameplay();
+	bTransformRightHand = MultiplayerCharacter->GetCombatComponent()->GetCombatState() == ECombatState::ECT_Unoccupied && !MultiplayerCharacter->IsDisabledGameplay();
 }
 
 

@@ -19,14 +19,14 @@ public:
 	AProjectileRocket();
 	virtual void Tick(float DeltaTime) override;
 	virtual void Destroyed() override;
-	
+
+
 protected:
 	virtual void BeginPlay() override;
 	
 	// 7.1 функция пересечения снаряда
 	virtual void OnHit(UPrimitiveComponent* HitComponent,AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
-
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> RocketMovementSoundLoop;
 	UPROPERTY(EditDefaultsOnly)
@@ -54,11 +54,11 @@ private:
 	// 8.5 Сюда запишем указатель на спавнящий эффект чтобы при столкновении его убрать
 	//UPROPERTY() // улетел в projectile
 	//UNiagaraComponent* RocketTrailEffectComponent; // улетел в projectile
-	// 8.6 Сюда запишем указатель на спавнящий звук чтобы при столкновении его убрать*/
+	// 8.6 Сюда запишем указатель на спавнящий звук чтобы при столкновении его убрать
 	
 	//7.2 создадим сетку для снаряда
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> ProjectileMeshComponent;
+	UPROPERTY(VisibleAnywhere)	//  улетел в projectile
+	TObjectPtr<UStaticMeshComponent> ProjectileMeshComponent; //  улетел в projectile*/
 	UPROPERTY()
 	UAudioComponent* RocketLoopSoundComponent;
 };

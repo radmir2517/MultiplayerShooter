@@ -95,6 +95,7 @@ void AMultiplayerPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Started,this,&AMultiplayerPlayerController::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Completed,this,&AMultiplayerPlayerController::FireButtonReleased);
 		EnhancedInputComponent->BindAction(ReloadAction,ETriggerEvent::Started,this,&AMultiplayerPlayerController::ReloadButtonPressed);
+		EnhancedInputComponent->BindAction(ThrowGrenadeAction,ETriggerEvent::Started,this,&AMultiplayerPlayerController::ThrowGrenadeButtonPressed);
 	}
 }
 
@@ -233,6 +234,17 @@ void AMultiplayerPlayerController::ReloadButtonPressed(const FInputActionValue& 
 	if (AMultiplayerCharacter* MultiplayerCharacter = Cast<AMultiplayerCharacter>(GetPawn()))
 	{	// при нажатии на R активируем перезарядку
 		MultiplayerCharacter->GetCombatComponent()->Reload();
+	}
+}
+
+void AMultiplayerPlayerController::ThrowGrenadeButtonPressed(const FInputActionValue& Value)
+{
+	// 5.2 выключим управление когда GameState == Cooldown
+	if (bDisableGameplay) return;
+	
+	if (AMultiplayerCharacter* MultiplayerCharacter = Cast<AMultiplayerCharacter>(GetPawn()))
+	{	// при нажатии на G активируем бросок
+		MultiplayerCharacter->GetCombatComponent()->ThrowGrenade();
 	}
 }
 

@@ -71,6 +71,7 @@ protected:
 	void FireButtonPressed(const FInputActionValue& Value);
 	void FireButtonReleased(const FInputActionValue& Value);
 	void ReloadButtonPressed(const FInputActionValue& Value);
+	void ThrowGrenadeButtonPressed(const FInputActionValue& Value);
 	// функция отсчета общего времени матча
 	void UpdateTimer();
 	// 2.1  функция получение переменных времени и статуса с сервера
@@ -99,6 +100,8 @@ protected:
 	TObjectPtr<UInputAction> FireAction;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> ReloadAction;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> ThrowGrenadeAction;
 
 	UPROPERTY();
 	TObjectPtr<AMultiplayerHUD> MultiplayerHUD;
