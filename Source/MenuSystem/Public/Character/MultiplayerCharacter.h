@@ -150,6 +150,9 @@ protected:
 	//  боевой компонент, пока в нем будет функционал экипировки оружия
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UCombatComponent> CombatComponent;
+	//20.1 прикрепление гранаты, там будет граната
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> GrenadeAttachmentComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon);
 	TObjectPtr<AWeapon> OverlappingWeapon;

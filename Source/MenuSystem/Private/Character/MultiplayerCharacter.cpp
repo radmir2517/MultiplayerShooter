@@ -47,15 +47,16 @@ AMultiplayerCharacter::AMultiplayerCharacter()
 	OverheadWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidgetComponent"));
 	OverheadWidgetComponent->SetupAttachment(GetRootComponent());
 	
-
 	DissolveTimelineComponent = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
-
+	//20.2 создадим из него компонент и прикрепи его к мешу и уберем коллизию
+	GrenadeAttachmentComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GrenadeAttachmentComponent"));
+	GrenadeAttachmentComponent->SetupAttachment(GetMesh(),"GrenadeSocket");
+	GrenadeAttachmentComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 	TurningInPlace = TurningInPlace::ETIP_NotTurning;
 	SetMinNetUpdateFrequency(33.f);
 	SetNetUpdateFrequency(66.f);
 	bReplicates = true;
-
-	
 }
 
 void AMultiplayerCharacter::PostInitializeComponents()
@@ -66,7 +67,6 @@ void AMultiplayerCharacter::PostInitializeComponents()
 	{	// в компонент задаем что персонаж владеющий компонентом это мы
 		CombatComponent->SetMultiplayerCharacter(this);
 	}
-	
 }
 
 void AMultiplayerCharacter::Tick(float DeltaTime)
