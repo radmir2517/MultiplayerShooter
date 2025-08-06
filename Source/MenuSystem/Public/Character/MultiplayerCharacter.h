@@ -81,6 +81,7 @@ public:
 	FORCEINLINE bool IsFireButtonPressed() const { return bFireButtonPressed; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool IsCharacterEliminated() const { return bIsEliminated;}
+	FORCEINLINE UStaticMeshComponent* GetGrenadeStaticMesh() const {return GrenadeAttachmentComponent;}
 	UFUNCTION(BlueprintCallable)
 	UCombatComponent* GetCombatComponent();
 	// получение компоненты камеры для изменения FOV

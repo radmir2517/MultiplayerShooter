@@ -10,6 +10,7 @@
 #include "CombatComponent.generated.h"
 
 
+class AProjectile;
 class AMultiplayerHUD;
 class AMultiplayerPlayerController;
 class AWeapon;
@@ -99,6 +100,11 @@ public:
 	// 19.4 окончания анимации броска гранаты для возврата состояния
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
+	// 21.1 Создадим функцию изменения видимости граната в начале броска и в конце
+	void SetVisibilityToGrenade(bool bVisibilityGrenade);
+	// 21.4 функция бросания гранаты запускаемая с анимации
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
 
 protected:
 	virtual void BeginPlay() override;
@@ -180,6 +186,9 @@ protected:
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
 
+	// функция инцилизации CarriedAmmoMap, добавим туда тип оружия нашего 
+	void InitializeCarriedAmmo();
+
 	// карта в котором в зависимости от типа оружие будет менятся и макс кол-во патронов
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 
@@ -204,8 +213,9 @@ protected:
 	// 17.1 Добавим патроны для Запускателя гранат
 	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingGrenadeLauncherAmmo = 5;
-	// функция инцилизации CarriedAmmoMap, добавим туда тип оружия нашего 
-	void InitializeCarriedAmmo();
+	// 21.0 Добавим переменную класса гранаты для спавна
+	UPROPERTY(EditDefaultsOnly, Category="HandGrenade")
+	TSubclassOf<AProjectile> GrenadeClass;
 
 private:
 	bool bIsStartingReloading = false;

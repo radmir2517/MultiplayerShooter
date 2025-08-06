@@ -52,6 +52,7 @@ AMultiplayerCharacter::AMultiplayerCharacter()
 	GrenadeAttachmentComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GrenadeAttachmentComponent"));
 	GrenadeAttachmentComponent->SetupAttachment(GetMesh(),"GrenadeSocket");
 	GrenadeAttachmentComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GrenadeAttachmentComponent->SetVisibility(false);
 	
 	TurningInPlace = TurningInPlace::ETIP_NotTurning;
 	SetMinNetUpdateFrequency(33.f);

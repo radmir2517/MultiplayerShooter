@@ -4,12 +4,14 @@
 
 #include "Camera/CameraComponent.h"
 #include "Character/MultiplayerCharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/MultiplayerHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/MultiplayerPlayerController.h"
+#include "Weapon/Projectile.h"
 #include "Weapon/Weapon.h"
 
 UCombatComponent::UCombatComponent()
@@ -688,6 +690,7 @@ void UCombatComponent::HandleThrowGrenade()
 		MultiplayerCharacter->PlayThrowGrenadeMontage();
 		//20.1 перекладывания основного оружия в левую руку
 		AttackWeaponAtSocket(MultiplayerCharacter->LeftHandSocketName);
+		SetVisibilityToGrenade(true);
 	}
 }
 
@@ -698,6 +701,37 @@ void UCombatComponent::ThrowGrenadeFinished()
 		CombatState = ECombatState::ECT_Unoccupied;
 		//20.2 перекладывания основного оружия обратно в правую
 		AttackWeaponAtSocket(MultiplayerCharacter->RightHandSocketName);
+	}
+}
+
+void UCombatComponent::SetVisibilityToGrenade(bool bVisibilityGrenade)
+{	//21.2 Изменим видимость гранаты в начале броска и в конце броска
+	if (MultiplayerCharacter && MultiplayerCharacter->GetGrenadeStaticMesh())
+	{
+		MultiplayerCharacter->GetGrenadeStaticMesh()->SetVisibility(bVisibilityGrenade);
+	}
+}
+
+void UCombatComponent::LaunchGrenade()
+{	//21.3 изменим видимость на False чтобы потом заспавнить гранату настоящую и у нас не было 2 гранаты
+	if (MultiplayerCharacter && MultiplayerCharacter->GetGrenadeStaticMesh())
+	{
+		MultiplayerCharacter->GetGrenadeStaticMesh()->SetVisibility(false);
+		//22.1 Начнем спавн гранаты
+		UWorld* World = GetWorld();
+		if (World && GrenadeClass)
+		{	//22.2 получим направление от места попадания центра экрана до места спавна гранаты
+			FVector ThrowDirection = HitLocation - MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation();
+			DrawDebugLine(World,MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation(), MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation() + ThrowDirection,FColor::Red,false,5.f);
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.Owner = MultiplayerCharacter;
+			SpawnParameters.Instigator = MultiplayerCharacter;
+			// 22.3 Заспавнем гранату
+			AProjectile* Grenade = World->SpawnActor<AProjectile>(GrenadeClass,
+				MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation(),
+				ThrowDirection.Rotation(),
+				SpawnParameters);
+		}		
 	}
 }
 

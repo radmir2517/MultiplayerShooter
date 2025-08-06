@@ -29,7 +29,7 @@ protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComponent,AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UBoxComponent> CollisionBox;
 
 	//17.3 создадим сетку для снаряда. перенесли с класса Rocket
