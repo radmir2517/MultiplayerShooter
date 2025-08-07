@@ -105,7 +105,9 @@ public:
 	// 21.4 функция бросания гранаты запускаемая с анимации
 	UFUNCTION(BlueprintCallable)
 	void LaunchGrenade();
-
+	// 23.1 Сделаем серверную функцию чтобы клиент мог передать серверу место попадания
+	UFUNCTION(Server, Reliable)
+	void ServerLaunchGrenade(FVector_NetQuantize InHitLocation);
 protected:
 	virtual void BeginPlay() override;
 

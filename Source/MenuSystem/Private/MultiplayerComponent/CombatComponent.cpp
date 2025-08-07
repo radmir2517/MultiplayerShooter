@@ -713,7 +713,15 @@ void UCombatComponent::SetVisibilityToGrenade(bool bVisibilityGrenade)
 }
 
 void UCombatComponent::LaunchGrenade()
-{	//21.3 изменим видимость на False чтобы потом заспавнить гранату настоящую и у нас не было 2 гранаты
+{	// 23.2 Запустим серверный спавн гранаты
+	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled())
+	{
+		ServerLaunchGrenade(HitLocation);
+	}
+}
+
+void UCombatComponent::ServerLaunchGrenade_Implementation(FVector_NetQuantize InHitLocation)
+{//21.3 изменим видимость на False чтобы потом заспавнить гранату настоящую и у нас не было 2 гранаты
 	if (MultiplayerCharacter && MultiplayerCharacter->GetGrenadeStaticMesh())
 	{
 		MultiplayerCharacter->GetGrenadeStaticMesh()->SetVisibility(false);
@@ -721,7 +729,7 @@ void UCombatComponent::LaunchGrenade()
 		UWorld* World = GetWorld();
 		if (World && GrenadeClass)
 		{	//22.2 получим направление от места попадания центра экрана до места спавна гранаты
-			FVector ThrowDirection = HitLocation - MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation();
+			FVector ThrowDirection = InHitLocation - MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation();
 			DrawDebugLine(World,MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation(), MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation() + ThrowDirection,FColor::Red,false,5.f);
 			FActorSpawnParameters SpawnParameters;
 			SpawnParameters.Owner = MultiplayerCharacter;
