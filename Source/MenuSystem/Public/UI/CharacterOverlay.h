@@ -38,4 +38,45 @@ public:
 	// текстовое значение MatchCountdownText
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UTextBlock> MatchCountdownText;
+	// текстовое значение GrenadesAmount
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UTextBlock> GrenadesAmount;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

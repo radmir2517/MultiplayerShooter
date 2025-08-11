@@ -14,6 +14,8 @@ class AMultiplayerHUD;
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
+
+DECLARE_DELEGATE_OneParam(FOverlayInitializedSignature, bool bOverlayCreated);
 /**
  * 
  */
@@ -49,6 +51,8 @@ public:
 	void SetHUDMatchCountDown(int32 CountDownTime);
 	// функция назначение виджету значения Таймер Матча
 	void SetHUDAnnouncementCountdown(int32 CountDownTime);
+	// функция назначение виджету значения Grenades
+	void SetHUDGrenadesAmount(int32 GrenadesAmount);
 	
 	// при изменения состояния MatchState на сервере изменим переменную созданную вручную в PlayerController
 	void OnMatchStateSet(FName InMatchState);
@@ -57,6 +61,9 @@ public:
 	FORCEINLINE bool IsDisableGameplay() const { return bDisableGameplay; }
 	// 6.1 добавим геттер для MatchState для Character в Destroyed
 	FORCEINLINE FName GetMatchState() const { return MatchState; }
+
+	// 24.11 Делегат который сообщит когда Overlay будет готов
+	FOverlayInitializedSignature OnInitializeOverlayInitializedDelegate;
 	
 protected:
 
@@ -122,8 +129,7 @@ protected:
 	float GetServerTime();
 	// для таймера, запуск ServerRequestServerTime
 	void CheckTimeSync();
-
-
+	
 
 	// таймер который какждый TimeToSyncTimer выполняет ServerRequestServerTime
 	FTimerHandle SyncTimerHandle;
@@ -145,6 +151,8 @@ protected:
 	void HandleMatchHasStarted();
 	// 3.1 функция когда состояние == cooldown
 	void HandleMatchCooldown();
+	
+	void HandleOverlayCreated(bool bOverlayCreated);
 private:
 	// 2.1 время игры
 	int32 MatchTime = 0;

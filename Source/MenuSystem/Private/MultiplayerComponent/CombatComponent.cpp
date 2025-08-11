@@ -4,7 +4,6 @@
 
 #include "Camera/CameraComponent.h"
 #include "Character/MultiplayerCharacter.h"
-#include "Components/CapsuleComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/MultiplayerHUD.h"
@@ -30,7 +29,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME(UCombatComponent,bIsAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent,CarriedAmmo,COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent,CombatState);
-	//DOREPLIFETIME(UCombatComponent,BulletSpawnTransform);
+	DOREPLIFETIME_CONDITION(UCombatComponent,GrenadesAmount, COND_OwnerOnly);
 }
 
 
@@ -161,6 +160,7 @@ void UCombatComponent::ChangeFOVForAiming(float DeltaTime)
 	}
 	MultiplayerCharacter->GetCameraComponent()->FieldOfView = CurrentFov;
 }
+
 
 void UCombatComponent::DropWeapon()
 {
@@ -669,7 +669,10 @@ void UCombatComponent::UpdateShotgunAmmoValue()
 }
 
 void UCombatComponent::ThrowGrenade()
-{	// 19.1 при нажатии проверяем что мы не заняты
+{
+	// 24.8 сделаем проверку на кол-во гранат
+	if (GrenadesAmount <= 0) return;
+	// 19.1 при нажатии проверяем что мы не заняты
 	if (CombatState == ECombatState::ECT_Unoccupied)
 	{	// 19.1.1 и включаем переключение статуса на бросок
 		Server_ThrowGrenade();
@@ -677,7 +680,10 @@ void UCombatComponent::ThrowGrenade()
 }
 
 void UCombatComponent::Server_ThrowGrenade_Implementation()
-{	// 19.2 переключим статусы и бросим гранату для сервера
+{
+	// 24.8 сделаем проверку на кол-во гранат
+	if (GrenadesAmount <= 0) return;
+	// 19.2 переключим статусы и бросим гранату для сервера
 	CombatState = ECombatState::ECT_ThrowGrenade;
 	// 19.2.1 запуск анимации, для клиента она будет в статусе
 	HandleThrowGrenade();
@@ -713,7 +719,8 @@ void UCombatComponent::SetVisibilityToGrenade(bool bVisibilityGrenade)
 }
 
 void UCombatComponent::LaunchGrenade()
-{	// 23.2 Запустим серверный спавн гранаты
+{	
+	// 23.2 Запустим серверный спавн гранаты
 	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled())
 	{
 		ServerLaunchGrenade(HitLocation);
@@ -721,7 +728,8 @@ void UCombatComponent::LaunchGrenade()
 }
 
 void UCombatComponent::ServerLaunchGrenade_Implementation(FVector_NetQuantize InHitLocation)
-{//21.3 изменим видимость на False чтобы потом заспавнить гранату настоящую и у нас не было 2 гранаты
+{
+	//21.3 изменим видимость на False чтобы потом заспавнить гранату настоящую и у нас не было 2 гранаты
 	if (MultiplayerCharacter && MultiplayerCharacter->GetGrenadeStaticMesh())
 	{
 		MultiplayerCharacter->GetGrenadeStaticMesh()->SetVisibility(false);
@@ -739,13 +747,31 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(FVector_NetQuantize In
 				MultiplayerCharacter->GetGrenadeStaticMesh()->GetComponentLocation(),
 				ThrowDirection.Rotation(),
 				SpawnParameters);
+			// 24.9 Отнимем 1 гранату
+			GrenadesAmount = FMath::Clamp(GrenadesAmount - 1, 0, GrenadesMaxAmount);
+			// 24.10 Если сервер это клиент то обновим у него кол-во гранат
+			if (MultiplayerCharacter->IsLocallyControlled())
+			{
+				UpdateHUDGrenadesAmount();
+			}
 		}		
 	}
 }
 
+void UCombatComponent::OnRep_GrenadesAmount()
+{	// 24.11 Обновим кол-во гранат у клиента при изменения числа
+	UpdateHUDGrenadesAmount();
+}
 
-
-
+void UCombatComponent::UpdateHUDGrenadesAmount()
+{
+	// обновим значение GrenadesAmount у сервера, а клиента обновиться уже в OnRep_GrenadesAmount
+	MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(MultiplayerCharacter->Controller) : MultiplayerPlayerController;
+	if (MultiplayerPlayerController)
+	{
+		MultiplayerPlayerController->SetHUDGrenadesAmount(GrenadesAmount);
+	}
+}
 
 
 

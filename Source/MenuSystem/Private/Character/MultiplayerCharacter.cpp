@@ -152,6 +152,7 @@ void AMultiplayerCharacter::BeginPlay()
 		FInputModeGameOnly ModeUI;
 		PlayerController->SetInputMode(ModeUI);
 	}
+	
 }
 
 UCombatComponent* AMultiplayerCharacter::GetCombatComponent()

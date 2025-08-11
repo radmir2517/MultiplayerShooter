@@ -40,6 +40,7 @@ public:
 	FORCEINLINE AWeapon* GetWeapon() { return Weapon; }
 	FORCEINLINE bool GetIsAiming() { return bIsAiming; }
 	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
+	FORCEINLINE int32 GetGrenadesAmount() { return GrenadesAmount; }
 	void SetIsAiming(bool bInAim);
 	UFUNCTION(Server, Reliable)
 	void ServerSetIsAiming(bool InbAim);
@@ -215,10 +216,26 @@ protected:
 	// 17.1 Добавим патроны для Запускателя гранат
 	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingGrenadeLauncherAmmo = 5;
+	
+	
+	/*
+	 * Гранаты
+	 */
 	// 21.0 Добавим переменную класса гранаты для спавна
 	UPROPERTY(EditDefaultsOnly, Category="HandGrenade")
 	TSubclassOf<AProjectile> GrenadeClass;
+	// 24.5 кол-во гранат, оно будет менять и реплицироваться
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_GrenadesAmount, Category="HandGrenade")
+	int32 GrenadesAmount = 4;
+	// 24.6 кол-во макс гранат для проверки
+	UPROPERTY(EditDefaultsOnly, Category="HandGrenade")
+	int32 GrenadesMaxAmount = 4;
 
+	void UpdateHUDGrenadesAmount();
+	// 24.7 Функция репликация для гранат
+	UFUNCTION()
+	void OnRep_GrenadesAmount();
+	
 private:
 	bool bIsStartingReloading = false;
 

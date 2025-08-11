@@ -48,6 +48,9 @@ void AMultiplayerPlayerController::BeginPlay()
 	{
 		AnnouncementWidget = MultiplayerHUD->CreateAnnouncementWidget();
 	}
+	// 24.12 Привяжемся к делегату который вызовется при создание виджета Overlay и обнвоим значение гранаты
+	OnInitializeOverlayInitializedDelegate.BindUObject(this, &AMultiplayerPlayerController::HandleOverlayCreated);
+	
 }
 
 void AMultiplayerPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -431,6 +434,22 @@ void AMultiplayerPlayerController::SetHUDAnnouncementCountdown(int32 CountDownTi
 	}
 }
 
+void AMultiplayerPlayerController::SetHUDGrenadesAmount(int32 GrenadesAmount)
+{
+	// 24.2 проверим что у нас есть HUD
+	MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
+	
+	if (MultiplayerHUD)
+	{	// 24.3 получим виджет оверлея
+		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
+		if (CharacterOverlay && CharacterOverlay->GrenadesAmount)
+		{	// 24.4 превратим значение GrenadesAmmo в текст и назначим виджету
+			FString GrenadesAmountText = FString::Printf(TEXT("%i"), GrenadesAmount);
+			CharacterOverlay->GrenadesAmount->SetText(FText::FromString(GrenadesAmountText));
+		}
+	}
+}
+
 void AMultiplayerPlayerController::UpdateTimer()
 { 
 	float RemainingTime = 0.f;
@@ -620,6 +639,16 @@ void AMultiplayerPlayerController::HandleMatchCooldown()
 		MultiplayerCharacter->FireButtonPressed(false);
 		// отключим поворот туловищем
 		MultiplayerCharacter->bUseControllerRotationYaw = false;
+	}
+}
+
+void AMultiplayerPlayerController::HandleOverlayCreated(bool bOverlayCreated)
+{
+	// 24.13 Когда сработает делегат OnInitializeOverlayInitializedDelegate мы обновим значение патронов
+	AMultiplayerCharacter* MultiplayerCharacter = Cast<AMultiplayerCharacter>(GetPawn());
+	if (bOverlayCreated && MultiplayerCharacter)
+	{
+		SetHUDGrenadesAmount(MultiplayerCharacter->GetCombatComponent()->GetGrenadesAmount());
 	}
 }
 

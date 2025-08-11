@@ -4,6 +4,7 @@
 #include "HUD/MultiplayerHUD.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Player/MultiplayerPlayerController.h"
 #include "UI/AnnouncementWidget.h"
 
 void AMultiplayerHUD::DrawHUD()
@@ -46,10 +47,16 @@ void AMultiplayerHUD::DrawHUD()
 UUserWidget* AMultiplayerHUD::CreateOverlayWidget()
 {
 	APlayerController* PlayerController = GetOwningPlayerController();
+	AMultiplayerPlayerController* MultiplayerPlayerController = nullptr;
+	MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(PlayerController) : MultiplayerPlayerController;
 	if (IsValid(PlayerController))
 	{
 		CharacterOverlayWidget = CreateWidget(PlayerController,CharacterOverlayClass);
 		CharacterOverlayWidget->AddToViewport();
+		if (MultiplayerPlayerController)
+		{	// 24.14 после создания виджета обновим значения гранат
+			MultiplayerPlayerController->OnInitializeOverlayInitializedDelegate.Execute(true);
+		}
 		return CharacterOverlayWidget;
 	}
 	return nullptr;
