@@ -109,6 +109,10 @@ public:
 	// 23.1 Сделаем серверную функцию чтобы клиент мог передать серверу место попадания
 	UFUNCTION(Server, Reliable)
 	void ServerLaunchGrenade(FVector_NetQuantize InHitLocation);
+	
+	//25.1 функция срабатывает когда поднимаем патроны 
+	UFUNCTION()
+	void PickUpAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 protected:
 	virtual void BeginPlay() override;
 

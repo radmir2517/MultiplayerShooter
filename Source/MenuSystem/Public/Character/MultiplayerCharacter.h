@@ -9,6 +9,7 @@
 #include "MultiplayerCharacter.generated.h"
 
 
+class UBuffComponent;
 class AMultiplayerPlayerState;
 class UTimelineComponent;
 class AMultiplayerPlayerController;
@@ -82,12 +83,18 @@ public:
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool IsCharacterEliminated() const { return bIsEliminated;}
 	FORCEINLINE UStaticMeshComponent* GetGrenadeStaticMesh() const {return GrenadeAttachmentComponent;}
+	FORCEINLINE bool IsCharacterFullHealthy() const { return Health >= MaxHealth; };
 	UFUNCTION(BlueprintCallable)
 	UCombatComponent* GetCombatComponent();
+	UFUNCTION(BlueprintCallable)
+	UBuffComponent* GetBuffComponent();
 	// получение компоненты камеры для изменения FOV
 	UCameraComponent* GetCameraComponent();
 	void UpdateHUDHealth();
-
+	/*
+	* Лечение
+	 */
+	void AddHealPoint(float Amount);
 	/*
 	 * Reload
 	 */
@@ -154,6 +161,9 @@ protected:
 	//20.1 прикрепление гранаты, там будет граната
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> GrenadeAttachmentComponent;
+	// 22,3 сделаем указатель на компонент
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UBuffComponent> BuffComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon);
 	TObjectPtr<AWeapon> OverlappingWeapon;
@@ -250,7 +260,9 @@ protected:
 	 *
 	 */
 	AMultiplayerPlayerState* MultiplayerPlayerState;
-	
+
+
+
 private:
 	
 	UFUNCTION()

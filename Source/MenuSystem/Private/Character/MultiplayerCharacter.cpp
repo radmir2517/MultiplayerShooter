@@ -12,6 +12,7 @@
 #include "GameplayTypes/TurningInPlace.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MultiplayerComponent/BuffComponent.h"
 #include "MultiplayerComponent/CombatComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -37,6 +38,9 @@ AMultiplayerCharacter::AMultiplayerCharacter()
 
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatComponent->SetIsReplicated(true);
+
+	BuffComponent = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
+	BuffComponent->SetIsReplicated(true);
 
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
@@ -67,6 +71,10 @@ void AMultiplayerCharacter::PostInitializeComponents()
 	if (CombatComponent)
 	{	// в компонент задаем что персонаж владеющий компонентом это мы
 		CombatComponent->SetMultiplayerCharacter(this);
+	}
+	if (BuffComponent)
+	{	// в компонент задаем что персонаж владеющий компонентом это мы
+		BuffComponent->SetMultiplayerCharacter(this);
 	}
 }
 
@@ -160,6 +168,11 @@ UCombatComponent* AMultiplayerCharacter::GetCombatComponent()
 	return CombatComponent;
 }
 
+UBuffComponent* AMultiplayerCharacter::GetBuffComponent()
+{
+	return BuffComponent;
+}
+
 UCameraComponent* AMultiplayerCharacter::GetCameraComponent()
 {
 	return Camera;
@@ -173,6 +186,15 @@ void AMultiplayerCharacter::UpdateHUDHealth()
 	{	// обновим здоровье
 		MultiplayerPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
+}
+
+
+void AMultiplayerCharacter::AddHealPoint(float Amount)
+{
+	// 24.7 Восстановим здоровье но не больше максимального
+	Health = FMath::Clamp(Health + Amount, 0.f, MaxHealth);
+	// 24.8 Обновим значение у сервера у клиента она будет в OnRep_Health.
+	UpdateHUDHealth();
 }
 
 void AMultiplayerCharacter::HideCameraIfCharacterClose()
@@ -578,6 +600,7 @@ void AMultiplayerCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, co
 		}
 	}
 }
+
 
 void AMultiplayerCharacter::OnRep_OverlappingWeapon(AWeapon* OldValue)
 {

@@ -11,7 +11,8 @@
 APickup::APickup()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	bReplicates = true;
+	
 	PickupRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PickupRoot"));
 	SetRootComponent(PickupRoot);
 	
@@ -25,6 +26,7 @@ APickup::APickup()
 	PickupMeshComponent =  CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMeshComponent"));
 	PickupMeshComponent->SetupAttachment(SphereComponent);
 	PickupMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PickupMeshComponent->SetRelativeScale3D(FVector(3.f));
 	PickupMeshComponent->SetRenderCustomDepth(true);
 	PickupMeshComponent->CustomDepthStencilValue =  CUSTOM_DEPTH_PINK;
 }
@@ -42,7 +44,7 @@ void APickup::BeginPlay()
 void APickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	PickupMeshComponent->AddWorldRotation(FRotator(0.f,0.0f,45.f * DeltaTime));
+	SphereComponent->AddWorldRotation(FRotator(0.f,45.f * DeltaTime,0));
 }
 
 void APickup::Destroyed()
@@ -54,6 +56,7 @@ void APickup::Destroyed()
 void APickup::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
+
+	Destroy();
 }
 

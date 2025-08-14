@@ -775,6 +775,20 @@ void UCombatComponent::UpdateHUDGrenadesAmount()
 
 
 
+void UCombatComponent::PickUpAmmo(EWeaponType WeaponType, int32 AmmoAmount)
+{
+	if (CarriedAmmoMap.Contains(WeaponType))
+	{
+		CarriedAmmoMap[WeaponType] += AmmoAmount;
+		GetAndUpdateHudCarriedAmmo();
+		if (Weapon && Weapon->IsEmpty() && Weapon->GetWeaponType() == WeaponType)
+		{
+			ReloadAmmoIfEmpty();
+		}
+	}
+}
+
+
 
 
 
