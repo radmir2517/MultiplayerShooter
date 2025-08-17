@@ -77,6 +77,8 @@ void AMultiplayerCharacter::PostInitializeComponents()
 		BuffComponent->SetMultiplayerCharacter(this);
 		// 25.13 Зададим стандартные значения скорости
 		BuffComponent->SetInitialBaseSpeed(GetCharacterMovement()->MaxWalkSpeed,GetCharacterMovement()->MaxWalkSpeedCrouched);
+		//26. Установим стандартную скорость прыжка
+		BuffComponent->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
 	}
 }
 

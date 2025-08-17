@@ -3,24 +3,36 @@
 
 #include "Pickups/JumpPickup.h"
 
+#include "Character/MultiplayerCharacter.h"
+#include "MultiplayerComponent/BuffComponent.h"
 
-// Sets default values
+
 AJumpPickup::AJumpPickup()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
 void AJumpPickup::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
 void AJumpPickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AJumpPickup::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// 26.3 проверим что это персонаж и запустим ускорение прыжка и таймер сброса
+	MultiplayerCharacter = Cast<AMultiplayerCharacter>(OtherActor);
+	// 26.4 Запустим бафф прыжка у сервера и у клиентов и запустим таймер сброса скорости
+	if (MultiplayerCharacter)
+	{
+		MultiplayerCharacter->GetBuffComponent()->JumpVelocityBuff(JumpVelocityBuff,JumpBuffTime);
+	}
+	Super::OnSphereBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 }
 

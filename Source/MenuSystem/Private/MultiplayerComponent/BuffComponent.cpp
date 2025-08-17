@@ -18,8 +18,6 @@ void UBuffComponent::BeginPlay()
 	
 }
 
-
-
 void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -34,13 +32,27 @@ void UBuffComponent::SetMultiplayerCharacter(AMultiplayerCharacter* InMultiplaye
 void UBuffComponent::Heal(float HealAmount, float HealingTime)
 {	// 24.3 переменные нужные для таймера инициализируем значениями лечения
 	HealingTimeRemaining = HealingTime;
-	HealAmountEverTickTimer = HealAmount / (HealingTime/TimerPeriod);
+	HealAmountEverTickTimer = HealAmount / (HealingTime/HealTimerPeriod);
 	// 24.4 Проверим что таймер не запущен и запустим его с периодом 0,2сек
 	if (!MultiplayerCharacter->GetWorldTimerManager().TimerExists(HealTimer))
 	{
-		MultiplayerCharacter->GetWorldTimerManager().SetTimer(HealTimer,this ,&UBuffComponent::HandleHealing,TimerPeriod,true);
+		MultiplayerCharacter->GetWorldTimerManager().SetTimer(HealTimer,this ,&UBuffComponent::HandleHealing,HealTimerPeriod,true);
 	}
 }
+
+void UBuffComponent::HandleHealing()
+{	// 24.5 если персонаж не жив, или здоровье полное или лечение закончилось то очистим таймер
+	if (!IsValid(MultiplayerCharacter) || MultiplayerCharacter->IsCharacterEliminated() || HealingTimeRemaining <= 0.f || MultiplayerCharacter->IsCharacterFullHealthy() )
+	{
+		MultiplayerCharacter->GetWorldTimerManager().ClearTimer(HealTimer);
+	}
+	else
+	{	// 24.6 если можно лечить то добавим поинтов
+		MultiplayerCharacter->AddHealPoint(HealAmountEverTickTimer);
+		HealingTimeRemaining -= HealTimerPeriod;
+	}
+}
+
 
 void UBuffComponent::SpeedBuff(float BaseSpeedBuff, float CrouchSpeedBuff, float SpeedBuffTime)
 {
@@ -76,15 +88,52 @@ void UBuffComponent::SetInitialBaseSpeed(float InInitialBaseSpeed, float InIniti
 	InitialCrouchSpeed = InInitialCrouchSpeed;
 }
 
-void UBuffComponent::HandleHealing()
-{	// 24.5 если персонаж не жив, или здоровье полное или лечение закончилось то очистим таймер
-	if (!IsValid(MultiplayerCharacter) || MultiplayerCharacter->IsCharacterEliminated() || HealingTimeRemaining <= 0.f || MultiplayerCharacter->IsCharacterFullHealthy() )
-	{
-		MultiplayerCharacter->GetWorldTimerManager().ClearTimer(HealTimer);
-	}
-	else
-	{	// 24.6 если можно лечить то добавим поинтов
-		MultiplayerCharacter->AddHealPoint(HealAmountEverTickTimer);
-		HealingTimeRemaining -= TimerPeriod;
-	}
+void UBuffComponent::JumpVelocityBuff(float InJumpVelocityBuff, float InJumpBuffTime)
+{
+	if (MultiplayerCharacter == nullptr || MultiplayerCharacter->GetCharacterMovement() == nullptr) return;
+
+	// 26.11 Установим скорость прыжка
+	MultiplayerCharacter->GetCharacterMovement()->JumpZVelocity = InJumpVelocityBuff;
+	// 26.12 сделаем это у клиентов также
+	MulticastJumpBuff(InJumpVelocityBuff);
+	// 26.13 установим таймер на сброс скорости
+	MultiplayerCharacter->GetWorldTimerManager().SetTimer(JumpResetBuffTimer,this, &UBuffComponent::ResetJumpBuff,InJumpBuffTime);
 }
+
+void UBuffComponent::MulticastJumpBuff_Implementation(float InJumpVelocityBuff)
+{
+	if (MultiplayerCharacter == nullptr || MultiplayerCharacter->GetCharacterMovement() == nullptr) return;
+	// 26.14 Установим скорость прыжка у клиента
+	MultiplayerCharacter->GetCharacterMovement()->JumpZVelocity = InJumpVelocityBuff;
+}
+
+void UBuffComponent::ResetJumpBuff()
+{
+	if (MultiplayerCharacter == nullptr || MultiplayerCharacter->GetCharacterMovement() == nullptr) return;
+	// 26.15 Установим стандартную скорость
+	MultiplayerCharacter->GetCharacterMovement()->JumpZVelocity = InitialJumpVelocity;
+	MulticastJumpBuff(InitialJumpVelocity);
+}
+
+void UBuffComponent::SetInitialJumpVelocity(float InInitialJumpVelocity)
+{
+	InitialJumpVelocity = InInitialJumpVelocity;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
