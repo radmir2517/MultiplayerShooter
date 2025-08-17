@@ -75,6 +75,8 @@ void AMultiplayerCharacter::PostInitializeComponents()
 	if (BuffComponent)
 	{	// в компонент задаем что персонаж владеющий компонентом это мы
 		BuffComponent->SetMultiplayerCharacter(this);
+		// 25.13 Зададим стандартные значения скорости
+		BuffComponent->SetInitialBaseSpeed(GetCharacterMovement()->MaxWalkSpeed,GetCharacterMovement()->MaxWalkSpeedCrouched);
 	}
 }
 
@@ -187,7 +189,6 @@ void AMultiplayerCharacter::UpdateHUDHealth()
 		MultiplayerPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
 }
-
 
 void AMultiplayerCharacter::AddHealPoint(float Amount)
 {

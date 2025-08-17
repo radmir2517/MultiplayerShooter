@@ -3,6 +3,8 @@
 
 #include "Pickups/Pickup.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "MenuSystem/MenuSystem.h"
@@ -29,6 +31,10 @@ APickup::APickup()
 	PickupMeshComponent->SetRelativeScale3D(FVector(3.f));
 	PickupMeshComponent->SetRenderCustomDepth(true);
 	PickupMeshComponent->CustomDepthStencilValue =  CUSTOM_DEPTH_PINK;
+
+	//23.6 Создадим компонент который будет как мешка у нас анимированная
+	PickupEffectComponent = CreateDefaultSubobject<UNiagaraComponent>("HealthPickupComponent");
+	PickupEffectComponent->SetupAttachment(GetRootComponent());
 }
 
 void APickup::BeginPlay()
@@ -49,7 +55,15 @@ void APickup::Tick(float DeltaTime)
 
 void APickup::Destroyed()
 {	// воспроизведем звук
-	UGameplayStatics::PlaySoundAtLocation(this,PickupSound,GetActorLocation());
+	if (PickupSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this,PickupSound,GetActorLocation());
+	}
+	//23.7 перед уничтожения воспроизведем эффект и в родительской еще и звук будет
+	if (PickupEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,PickupEffect,GetActorLocation(),GetActorRotation());
+	}
 	Super::Destroyed();
 }
 
@@ -59,4 +73,30 @@ void APickup::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 
 	Destroy();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

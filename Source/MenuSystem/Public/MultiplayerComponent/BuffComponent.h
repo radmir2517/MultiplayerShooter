@@ -23,13 +23,25 @@ public:
 	void SetMultiplayerCharacter(AMultiplayerCharacter* InMultiplayerCharacter);
 	// 24.2.6 Функция лечения 
 	void Heal(float HealAmount, float HealingTime);
+	// 25.4 здесь будем скороять персонажа сервера и клиента и запускать таймер сброса
+	void SpeedBuff(float BaseSpeedBuff, float CrouchSpeedBuff, float SpeedBuffTime);
+	// 25.5  получим стандартную скорость чтобы потом к нему вернуть
+	void SetInitialBaseSpeed(float InInitialBaseSpeed, float InInitialCrouchSpeed);
+	
 protected:
 	virtual void BeginPlay() override;
+	// 25.6 Функция которая и у клиентов назначит изменения скорости
+	UFUNCTION(NetMulticast,Reliable)
+	void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+	// 25.7 Функция сброса скорости к нормали запуская таймеров
+	void ResetSpeedBuff();
+	
 	// 22.0 Указатель для персонажа
 	UPROPERTY()
 	TObjectPtr<AMultiplayerCharacter> MultiplayerCharacter;
 
 private:
+	
 	/*
 	 * Лечение
 	 */
@@ -44,6 +56,14 @@ private:
 	float HealAmountEverTickTimer;
 	// 24.2.5 Функция которая будет запускать таймер лечения
 	void HandleHealing();
+
+
+	//25.5.1 Базовая скорость ходьбы, назначается сюда в начале игры
+	float InitialBaseSpeed;
+	//25.5.2 Базовая скорость на корточках, назначается сюда в начале игры
+	float InitialCrouchSpeed;
+	//25.5.3 Таймер который сбросит скорость до нормального 
+	FTimerHandle SpeedResetBuffTimer;
 };
 
 

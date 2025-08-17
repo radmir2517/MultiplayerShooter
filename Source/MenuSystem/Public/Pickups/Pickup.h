@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Pickup.generated.h"
 
+class UNiagaraSystem;
+class UNiagaraComponent;
 class USphereComponent;
 
 UCLASS()
@@ -39,5 +41,59 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> PickupSound;
 
-	
+	// 23.3 сделаем переменную которая будет основной визуальной частью аля вроде меша будет
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UNiagaraComponent> PickupEffectComponent;
+	// 23.4 эффект активируемый после поднятия предмета
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UNiagaraSystem> PickupEffect;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

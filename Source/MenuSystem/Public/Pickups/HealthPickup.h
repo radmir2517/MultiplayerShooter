@@ -21,17 +21,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	// 23.5 Переопредлим функции
 	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-	virtual void Destroyed() override;
+
 
 protected:
 	virtual void BeginPlay() override;
-	// 23.3 сделаем переменную которая будет основной визуальной частью аля вроде меша будет
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UNiagaraComponent> HealthPickupComponent;
-	// 23.4 эффект активируемый после поднятия предмета
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UNiagaraSystem> HealingEffect;
-	
+		
 	// 23.1 Создадим переменную для значения лечения
 	UPROPERTY(EditDefaultsOnly)
 	float HealAmount = 100.f;
