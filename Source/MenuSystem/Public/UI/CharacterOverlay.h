@@ -23,6 +23,14 @@ public:
 	// текстовое значение здоровья
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UTextBlock> HealthText;
+	
+	// прогресс бар щита
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UProgressBar> ShieldBar;
+	// текстовое значения щита
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UTextBlock> ShieldText;
+	
 	// текстовое значение очков
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UTextBlock> ScopeAmount;

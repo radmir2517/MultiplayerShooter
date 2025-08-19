@@ -29,6 +29,7 @@ public:
 	AMultiplayerPlayerController();
 	virtual void BeginPlay() override;
 
+
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	// функция которая активируется когда получает пешку во владения, после смерти или в перевый раз например, вызывается гарантированно на сервере, на клиенте в OnRep_Pawn
@@ -38,7 +39,7 @@ public:
 	
 	virtual void SetupInputComponent() override;
 	// функция получения виджета и назначения здоровья в прогресс бар и текст
-	void SetHUDHealth(const float Health, const float MaxHealth);
+	bool SetHUDHealth(const float Health, const float MaxHealth);
 	// функция назначение виджету значения Scope
 	void SetHUDScore(const float Score);
 	// функция назначение виджету значения Defeats
@@ -53,9 +54,12 @@ public:
 	void SetHUDAnnouncementCountdown(int32 CountDownTime);
 	// функция назначение виджету значения Grenades
 	void SetHUDGrenadesAmount(int32 GrenadesAmount);
+	// 27,2  функция получения виджета и назначения щита в прогресс бар и текст
+	bool SetHUDShield(const float Shield, const float MaxShield);
 	
 	// при изменения состояния MatchState на сервере изменим переменную созданную вручную в PlayerController
 	void OnMatchStateSet(FName InMatchState);
+	
 
 	// 5.2 сделай геттер для Character для выключения AimOffset
 	FORCEINLINE bool IsDisableGameplay() const { return bDisableGameplay; }
@@ -151,7 +155,7 @@ protected:
 	void HandleMatchHasStarted();
 	// 3.1 функция когда состояние == cooldown
 	void HandleMatchCooldown();
-	
+	// 24. После создания виджета в HUD мы обновим значение гранат
 	void HandleOverlayCreated(bool bOverlayCreated);
 private:
 	// 2.1 время игры

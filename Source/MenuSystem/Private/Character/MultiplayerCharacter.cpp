@@ -126,6 +126,19 @@ void AMultiplayerCharacter::PollInit()
 			MultiplayerPlayerState->AddDefeatPoints(0);
 		}
 	}
+	// 28.5 Сделаем некоторые функции HUD булевыми
+	// и будем получать их статус активации, если false то будет перезапускать до победного
+	if (IsLocallyControlled() && MultiplayerPlayerController)
+	{
+		if (bIsHealthInitialized == false)
+		{
+			bIsHealthInitialized = UpdateHUDHealth();
+		}
+		if (bIsShieldInitialized == false)
+		{
+			bIsShieldInitialized = UpdateHUDShield();
+		}
+	}
 }
 
 void AMultiplayerCharacter::Destroyed()
@@ -143,7 +156,6 @@ void AMultiplayerCharacter::Destroyed()
 	
 	Super::Destroyed();
 }
-
 
 
 void AMultiplayerCharacter::BeginPlay()
@@ -183,13 +195,27 @@ UCameraComponent* AMultiplayerCharacter::GetCameraComponent()
 }
 
 
-void AMultiplayerCharacter::UpdateHUDHealth()
+bool AMultiplayerCharacter::UpdateHUDHealth()
 {
 	MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(Controller) : MultiplayerPlayerController;
 	if (MultiplayerPlayerController)
 	{	// обновим здоровье
-		MultiplayerPlayerController->SetHUDHealth(Health, MaxHealth);
+		return MultiplayerPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
+	else
+	{
+		return false;
+	}
+}
+
+bool AMultiplayerCharacter::UpdateHUDShield()
+{
+	MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(Controller) : MultiplayerPlayerController;
+	if (MultiplayerPlayerController)
+	{	// обновим значение щита
+		return MultiplayerPlayerController->SetHUDShield(Shield, MaxShield);
+	}
+	else { return false;}
 }
 
 void AMultiplayerCharacter::AddHealPoint(float Amount)
@@ -230,6 +256,8 @@ void AMultiplayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimePro
 	DOREPLIFETIME_CONDITION(AMultiplayerCharacter,OverlappingWeapon,COND_OwnerOnly);
 	DOREPLIFETIME(AMultiplayerCharacter,Health);
 	DOREPLIFETIME(AMultiplayerCharacter,MaxHealth);
+	DOREPLIFETIME(AMultiplayerCharacter,Shield);
+	DOREPLIFETIME(AMultiplayerCharacter,MaxShield);
 }
 
 void AMultiplayerCharacter::OnRep_ReplicatedMovement()
@@ -290,7 +318,6 @@ FVector AMultiplayerCharacter::GetHitLocation() const
 	}
 	return FVector::ZeroVector;
 }
-
 
 /*
 void AMultiplayerCharacter::FireMontagePlayAndSpawnBullet(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)
@@ -571,10 +598,13 @@ void AMultiplayerCharacter::SimProxiesTurn()
 	UE_LOG(LogTemp,Warning,TEXT("DeltaRotationBetweenFrames: %f"),DeltaRotationBetweenFrames);
 }
 
-void AMultiplayerCharacter::OnRep_Health()
+void AMultiplayerCharacter::OnRep_Health(float OldValue)
 {
-	// запустим монтаж получения урона
-	MulticastHitMontagePlay();
+	if (OldValue > Health)
+	{
+		// запустим монтаж получения урона
+		MulticastHitMontagePlay();
+	}
 	// обновим здоровье
 	UpdateHUDHealth();
 }
@@ -583,10 +613,43 @@ void AMultiplayerCharacter::OnRep_MaxHealth()
 {
 }
 
+void AMultiplayerCharacter::OnRep_Shield(float OldValue)
+{
+	if (OldValue > Shield)
+	{
+		// запустим монтаж получения урона
+		MulticastHitMontagePlay();
+	}
+	UpdateHUDShield();
+}
+
+void AMultiplayerCharacter::OnRep_MaxShield()
+{
+	
+}
+
 void AMultiplayerCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-	class AController* InstigatedBy, AActor* DamageCauser)
-{	
-	Health = FMath::Clamp(Health-Damage,0.f,MaxHealth);
+                                          class AController* InstigatedBy, AActor* DamageCauser)
+{
+	// 28.1 Сделаем временную переменную урона и будем менять его если есть щит
+	float DamageToHealth  = Damage;
+	if (Shield > 0.f)
+	{	// если щит больше урона
+		if (Shield > DamageToHealth)
+		{
+			Shield = FMath::Clamp(Shield - DamageToHealth, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else // если щит меньше урона
+		{
+			Shield = 0.f;
+			DamageToHealth -= Shield;
+		}
+		UpdateHUDShield();
+	}
+	//28.2 если щит меньше урона или его нет то наносится урон по здоровье
+	Health = FMath::Clamp(Health-DamageToHealth,0.f,MaxHealth);
+	
 	UpdateHUDHealth();
 	MulticastHitMontagePlay();
 	

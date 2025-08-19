@@ -23,6 +23,7 @@
 AMultiplayerPlayerController::AMultiplayerPlayerController()
 {
 	bReplicates = true;
+
 }
 
 void AMultiplayerPlayerController::BeginPlay()
@@ -252,7 +253,7 @@ void AMultiplayerPlayerController::ThrowGrenadeButtonPressed(const FInputActionV
 }
 
 
-void AMultiplayerPlayerController::SetHUDHealth(const float Health, const float MaxHealth)
+bool AMultiplayerPlayerController::SetHUDHealth(const float Health, const float MaxHealth)
 {
 	// проверим что у нас есть HUD
 	MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
@@ -268,7 +269,16 @@ void AMultiplayerPlayerController::SetHUDHealth(const float Health, const float 
 			// также превратим цифры в текст и назначим в блок текст
 			FString HealthText = FString::Printf(TEXT("%i/%i"),  FMath::CeilToInt32(Health), FMath::CeilToInt32(MaxHealth));
 			CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
+			return true;
 		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -450,6 +460,35 @@ void AMultiplayerPlayerController::SetHUDGrenadesAmount(int32 GrenadesAmount)
 	}
 }
 
+bool AMultiplayerPlayerController::SetHUDShield(const float Shield, const float MaxShield)
+{
+	// проверим что у нас есть HUD
+	MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
+	
+	if (MultiplayerHUD)
+	{	// получим виджет оверлея
+		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
+		if (CharacterOverlay && CharacterOverlay->ShieldBar && CharacterOverlay->ShieldText)
+		{	// превратим в процент
+			float ShieldPercent = (Shield/MaxShield);
+			// назначим в прогресс бар
+			CharacterOverlay->ShieldBar->SetPercent(ShieldPercent);
+			// также превратим цифры в текст и назначим в блок текст
+			FString ShieldText = FString::Printf(TEXT("%i/%i"),  FMath::CeilToInt32(Shield), FMath::CeilToInt32(MaxShield));
+			CharacterOverlay->ShieldText->SetText(FText::FromString(ShieldText));
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void AMultiplayerPlayerController::UpdateTimer()
 { 
 	float RemainingTime = 0.f;
@@ -576,6 +615,8 @@ void AMultiplayerPlayerController::OnMatchStateSet(FName InMatchState)
 		HandleMatchCooldown();
 	}
 }
+
+
 
 void AMultiplayerPlayerController::OnRep_MatchState()
 {

@@ -9,6 +9,8 @@
 #include "MultiplayerCharacter.generated.h"
 
 
+class AMultiplayerHUD;
+class UCharacterOverlay;
 class UBuffComponent;
 class AMultiplayerPlayerState;
 class UTimelineComponent;
@@ -90,7 +92,11 @@ public:
 	UBuffComponent* GetBuffComponent();
 	// получение компоненты камеры для изменения FOV
 	UCameraComponent* GetCameraComponent();
-	void UpdateHUDHealth();
+
+
+	bool UpdateHUDHealth();
+
+	bool UpdateHUDShield();
 	/*
 	* Лечение
 	 */
@@ -135,9 +141,20 @@ protected:
 	void SimProxiesTurn();
 	
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float OldValue);
 	UFUNCTION()
 	void OnRep_MaxHealth();
+	//28.3 булевая для PollInit для проверки запуска UpdateHudHealth
+	bool bIsHealthInitialized = false;
+
+	//27.3 Создадим репликацию для клиента
+	UFUNCTION()
+	void OnRep_Shield(float OldValue);
+	//27.4 Создадим репликацию для клиента
+	UFUNCTION()
+	void OnRep_MaxShield();
+	//28.4 булевая для PollInit для проверки запуска UpdateHudShield
+	bool bIsShieldInitialized = false;
 	// функция получения урона
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
@@ -211,6 +228,12 @@ protected:
 	float Health = 100.f;
 	UPROPERTY(ReplicatedUsing="OnRep_Health")
 	float MaxHealth = 100.f;
+
+	// щит персонажа
+	UPROPERTY(ReplicatedUsing="OnRep_Shield")
+	float Shield = 100.f;
+	UPROPERTY(ReplicatedUsing="OnRep_MaxShield")
+	float MaxShield = 100.f;
 	
 	UPROPERTY()
 	AMultiplayerPlayerController* MultiplayerPlayerController;
@@ -260,8 +283,10 @@ protected:
 	 *
 	 */
 	AMultiplayerPlayerState* MultiplayerPlayerState;
-
-
+	UPROPERTY()
+	UCharacterOverlay* CharacterOverlay;
+	UPROPERTY()
+	AMultiplayerHUD* MultiplayerHUD;
 
 private:
 	
