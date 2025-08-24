@@ -55,7 +55,10 @@ public:
 	FORCEINLINE int32 GetMaxMagAmmo() const {return MaxWeaponAmmo;}
 	FORCEINLINE EWeaponType GetWeaponType() const {return WeaponType;}
 	FORCEINLINE USoundBase* GetPickUpSound() const {return PickUpSound;}
+	FORCEINLINE bool IsStandartWeapon() const {return  bIsStandardWeapon;}
 	void SetCurrentAmmo(const int32 Ammo) {WeaponAmmo = Ammo;}
+	//31. задания булевой что это стандартное оружие
+	void SetbStandardWeapon(bool bStandardWeapon);
 	
 	// функция которая возвращает части прицела в структуре
 	FHUDPackage GetHudPackage() const;
@@ -189,6 +192,10 @@ protected:
 	// звук подбора оружия
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
 	TObjectPtr<USoundBase> PickUpSound;
+
+	//31.6 bool для обозначения выдается ли оружие при спавне игрока или нет
+	bool bIsStandardWeapon = false;
+	
 };
 
 

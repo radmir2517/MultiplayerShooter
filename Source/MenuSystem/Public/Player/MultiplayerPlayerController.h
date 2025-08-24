@@ -45,9 +45,9 @@ public:
 	// функция назначение виджету значения Defeats
 	void SetHUDDefeats(int32 Defeats);
 	// функция назначение виджету значения WeaponAmmo
-	void SetHUDWeaponAmmo(int32 Ammo);
+	bool SetHUDWeaponAmmo(int32 Ammo);
 	// функция назначение виджету значения CarriedAmmo
-	void SetHUDCarriedAmmo(int32 CarriedAmmo);
+	bool SetHUDCarriedAmmo(int32 CarriedAmmo);
 	// функция назначение виджету значения Таймер Матча
 	void SetHUDMatchCountDown(int32 CountDownTime);
 	// функция назначение виджету значения Таймер Матча

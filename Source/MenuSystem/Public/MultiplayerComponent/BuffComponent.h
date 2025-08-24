@@ -32,6 +32,8 @@ public:
 	void JumpVelocityBuff(float InJumpVelocityBuff, float InJumpBuffTime);
 	// 26.5 получение стандартных значения скорости прыжка
 	void SetInitialJumpVelocity(float InInitialJumpVelocity);
+	//29.4 функция восстановление щита и запуск таймера
+	void ShieldReplenish(float InShieldReplenish, float ShieldReplenishTime);
 protected:
 	virtual void BeginPlay() override;
 	// 25.6 Функция которая и у клиентов назначит изменения скорости
@@ -66,6 +68,21 @@ private:
 	float HealAmountEverTickTimer;
 	// 24.2.5 Функция которая будет запускать таймер лечения
 	void HandleHealing();
+	/*
+	* Восстановление щита
+	*/
+	// 29.2.1 Сделаем таймер для лечения каждые 0.2 сек
+	FTimerHandle ShieldReplenishTimer;
+	// 29.2.2 переменная = HealingTime  которая будет вычитать таймер пока не станет 0
+	float ShieldTimeRemaining;
+	// 29.2.3 период таймера
+	UPROPERTY(EditDefaultsOnly)
+	float ShieldReplenishTimerPeriod = 0.2;
+	// 29.2.4 кол-во восстановение за раз таймером
+	float ShieldAmountEverTickTimer;
+	// 29.2.5 Функция которая будет запускать таймер лечения
+	void HandleShieldReplenish();
+
 	/*
 	 * Ускорение
 	 */

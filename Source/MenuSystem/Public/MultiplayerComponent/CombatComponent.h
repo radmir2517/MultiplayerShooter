@@ -30,6 +30,9 @@ public:
 
 	// функция экипировки оружия, активируется из Character
 	void EquipWeapon(AWeapon* InWeapon);
+
+	void EquipPrimaryWeapon(AWeapon* InWeapon);
+	void EquipSecondaryWeapon(AWeapon* InWeapon);
 	// сеттер и геттер для персонажа владеющей компонентом
 	FORCEINLINE void SetMultiplayerCharacter(AMultiplayerCharacter* InMultiplayerCharacter)
 	{
@@ -37,7 +40,7 @@ public:
 	}
 
 	FORCEINLINE AMultiplayerCharacter* GetMultiplayerCharacter() { return MultiplayerCharacter; }
-	FORCEINLINE AWeapon* GetWeapon() { return Weapon; }
+	FORCEINLINE AWeapon* GetWeapon() { return PrimaryEquipWeapon; }
 	FORCEINLINE bool GetIsAiming() { return bIsAiming; }
 	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
 	FORCEINLINE int32 GetGrenadesAmount() { return GrenadesAmount; }
@@ -113,11 +116,17 @@ public:
 	//25.1 функция срабатывает когда поднимаем патроны 
 	UFUNCTION()
 	void PickUpAmmo(EWeaponType WeaponType, int32 AmmoAmount);
+	// 20.1 функции созданные для EquipWeapon для сокращения написания кода в EquipWeapon
+	bool GetAndUpdateHudCarriedAmmo();
 protected:
 	virtual void BeginPlay() override;
-
+	// функция репликация для оружия
 	UFUNCTION()
-	void OnRep_Weapon();
+	void OnRep_PrimaryEquipWeapon();
+	// функция репликация для оружия
+	UFUNCTION()
+	void OnRep_SecondaryEquipWeapon();
+	
 	//функция которая будет получать с оружия картинки прицела и отправлять в HUD каждый кадр
 	void SetHUDCrosshairs(float DeltaTime);
 	// изменения FOV при прицеливания
@@ -144,10 +153,12 @@ protected:
 	TObjectPtr<AMultiplayerCharacter> MultiplayerCharacter;
 	// оружие которое будет назначаться и потом экипироваться
 
-	UPROPERTY(ReplicatedUsing=OnRep_Weapon, BlueprintReadOnly)
-	TObjectPtr<AWeapon> Weapon;
+	UPROPERTY(ReplicatedUsing=OnRep_PrimaryEquipWeapon, BlueprintReadOnly)
+	TObjectPtr<AWeapon> PrimaryEquipWeapon;
 	
 
+	UPROPERTY(ReplicatedUsing=OnRep_SecondaryEquipWeapon, BlueprintReadOnly)
+	TObjectPtr<AWeapon> SecondaryEquipWeapon;
 	UPROPERTY(Replicated)
 	bool bIsAiming;
 
@@ -245,10 +256,9 @@ private:
 
 	// 20.1 функции созданные для EquipWeapon для сокращения написания кода в EquipWeapon
 	void DropWeapon();
-	void GetAndUpdateHudCarriedAmmo();
 	void SpawnPickUpSound();
 	void ReloadAmmoIfEmpty();
-	void AttackWeaponAtSocket(FName SocketName);
+	void AttackWeaponAtSocket(AWeapon* InWeapon,FName SocketName);
 };
 
 

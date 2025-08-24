@@ -138,6 +138,14 @@ void AMultiplayerCharacter::PollInit()
 		{
 			bIsShieldInitialized = UpdateHUDShield();
 		}
+		if (bIsAmmoInitialized == false)
+		{
+			bIsAmmoInitialized = UpdateHUDAmmo();
+		}
+		if (bIsCarriedAmmoInitialized == false)
+		{
+			bIsCarriedAmmoInitialized = UpdateHUDCarriedAmmo();
+		}
 	}
 }
 
@@ -161,6 +169,8 @@ void AMultiplayerCharacter::Destroyed()
 void AMultiplayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	//31.5 заспавнем стандартное оружие игроку
+	SpawnStandardWeapon();
 	
 	// получем контроллер и назначим стартовое макс хп и обычное хп
 	UpdateHUDHealth();
@@ -218,12 +228,39 @@ bool AMultiplayerCharacter::UpdateHUDShield()
 	else { return false;}
 }
 
+bool AMultiplayerCharacter::UpdateHUDAmmo()
+{
+	MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(Controller) : MultiplayerPlayerController;
+	if (MultiplayerPlayerController && GetWeapon())
+	{	// обновим значение щита
+		return MultiplayerPlayerController->SetHUDWeaponAmmo(GetWeapon()->GetCurrentAmmo());
+	}
+	else { return false;}
+}
+
+bool AMultiplayerCharacter::UpdateHUDCarriedAmmo()
+{
+	if (CombatComponent)
+	{	// обновим значение щита
+		return CombatComponent->GetAndUpdateHudCarriedAmmo();
+	}
+	else { return false;}
+}
+
 void AMultiplayerCharacter::AddHealPoint(float Amount)
 {
 	// 24.7 Восстановим здоровье но не больше максимального
 	Health = FMath::Clamp(Health + Amount, 0.f, MaxHealth);
 	// 24.8 Обновим значение у сервера у клиента она будет в OnRep_Health.
 	UpdateHUDHealth();
+}
+
+void AMultiplayerCharacter::AddShieldPoint(float Amount)
+{
+	// 29. Восстановим щита но не больше максимального
+	Shield = FMath::Clamp(Shield + Amount, 0.f, MaxHealth);
+	// 29. Обновим значение у сервера у клиента она будет в OnRep_Health.
+	UpdateHUDShield();
 }
 
 void AMultiplayerCharacter::HideCameraIfCharacterClose()
@@ -421,7 +458,6 @@ void AMultiplayerCharacter::MulticastElim_Implementation()
 	ElimParticleSpawnPoint += FVector(0, 0, 200);
 	ElimBotParticleComponent = UGameplayStatics::SpawnEmitterAtLocation(this,ElimBotParticle,ElimParticleSpawnPoint,GetActorRotation());
 	UGameplayStatics::SpawnSoundAtLocation(this, ElimSound,ElimParticleSpawnPoint,GetActorRotation());
-
 	
 }
 
@@ -434,6 +470,7 @@ void AMultiplayerCharacter::ElimMontagePlay()
 		AnimInstance->Montage_Play(ElimMontage,1.f);
 	}
 }
+
 void AMultiplayerCharacter::StartDissolve()
 {
 	// привяжемся к делегату обнолвение TimelIne
@@ -456,6 +493,24 @@ void AMultiplayerCharacter::UpdateDissolveMaterial(float Value)
 	if (DissolveDynamicMaterialInstance)
 	{	// будем обновлять параметр Dissolve каждый момент Timeline
 		DissolveDynamicMaterialInstance->SetScalarParameterValue("Dissolve", Value);
+	}
+}
+
+void AMultiplayerCharacter::SpawnStandardWeapon()
+{
+	// получем GameMode и World для спавна, Gamemode должен быть этот а нет тот что в лобби
+	AMultiplayerGameModeTrue* MultiplayerGameMode = Cast<AMultiplayerGameModeTrue>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (MultiplayerGameMode && World && StandartWeaponClass)
+	{	// заспавнем и запомним указатель
+		StandardWeapon = World->SpawnActor<AWeapon>(StandartWeaponClass);
+		
+		if (StandardWeapon && CombatComponent)
+		{	// экипируем его
+			CombatComponent->EquipWeapon(StandardWeapon);
+			// отметим что это стандартное оружие и при выбрасывае оно учитожиться
+			StandardWeapon->SetbStandardWeapon(true);
+		}
 	}
 }
 

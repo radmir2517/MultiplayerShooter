@@ -314,7 +314,7 @@ void AMultiplayerPlayerController::SetHUDDefeats(int32 Defeats)
 	}
 }
 
-void AMultiplayerPlayerController::SetHUDWeaponAmmo(int32 Ammo)
+bool AMultiplayerPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 {
 	// проверим что у нас есть HUD
 	MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
@@ -326,11 +326,14 @@ void AMultiplayerPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 		{	// превратим значение Ammo в текст и назначим виджету
 			FString AmmoText = FString::Printf(TEXT("%i"), Ammo);
 			CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+			return true;
 		}
+		else {return false;}
 	}
+	else {return false;}
 }
 
-void AMultiplayerPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmo)
+bool AMultiplayerPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmo)
 {
 	// проверим что у нас есть HUD
 	MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
@@ -342,8 +345,11 @@ void AMultiplayerPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmo)
 		{	// превратим значение Ammo в текст и назначим виджету
 			FString CarriedAmmoText = FString::Printf(TEXT("%i"), CarriedAmmo);
 			CharacterOverlay->CarriedAmmo->SetText(FText::FromString(CarriedAmmoText));
+			return true;
 		}
+		else {return false;}
 	}
+	else {return false;}
 }
 
 void AMultiplayerPlayerController::SetHUDMatchCountDown(int32 CountDownTime)

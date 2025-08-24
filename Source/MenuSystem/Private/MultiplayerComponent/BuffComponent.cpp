@@ -53,6 +53,30 @@ void UBuffComponent::HandleHealing()
 	}
 }
 
+void UBuffComponent::ShieldReplenish(float InShieldReplenish, float ShieldReplenishTime)
+{
+	// 29.5 переменные нужные для таймера инициализируем значениями восстановление щита
+	ShieldTimeRemaining = ShieldReplenishTime;
+	ShieldAmountEverTickTimer = InShieldReplenish / (ShieldReplenishTime/ShieldReplenishTimerPeriod);
+	// 29.6 Проверим что таймер не запущен и запустим его с периодом 0,2сек
+	if (!MultiplayerCharacter->GetWorldTimerManager().TimerExists(ShieldReplenishTimer))
+	{
+		MultiplayerCharacter->GetWorldTimerManager().SetTimer(ShieldReplenishTimer,this ,&UBuffComponent::HandleShieldReplenish,ShieldReplenishTimerPeriod,true);
+	}
+}
+void UBuffComponent::HandleShieldReplenish()
+{
+	// 29.7 если персонаж не жив, или щит полный или восстановление щита закончилось то очистим таймер
+	if (!IsValid(MultiplayerCharacter) || MultiplayerCharacter->IsCharacterEliminated() || ShieldTimeRemaining <= 0.f || MultiplayerCharacter->IsCharacterFullShield() )
+	{
+		MultiplayerCharacter->GetWorldTimerManager().ClearTimer(ShieldReplenishTimer);
+	}
+	else
+	{	// 29.8 если можно восстановить щит то добавим поинтов
+		MultiplayerCharacter->AddShieldPoint(ShieldAmountEverTickTimer);
+		ShieldTimeRemaining -= ShieldReplenishTimerPeriod;
+	}
+}
 
 void UBuffComponent::SpeedBuff(float BaseSpeedBuff, float CrouchSpeedBuff, float SpeedBuffTime)
 {
@@ -119,6 +143,8 @@ void UBuffComponent::SetInitialJumpVelocity(float InInitialJumpVelocity)
 {
 	InitialJumpVelocity = InInitialJumpVelocity;
 }
+
+
 
 
 

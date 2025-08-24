@@ -102,6 +102,10 @@ void AWeapon::Dropped()
 	SetOwner(nullptr);
 	MultiplayerCharacter = nullptr;
 	MultiplayerPlayerController = nullptr;
+	if (bIsStandardWeapon)
+	{
+		SetLifeSpan(1.f);
+	}
 }
 
 void AWeapon::SetHUDAmmo_Public()
@@ -113,8 +117,14 @@ void AWeapon::SetHUDAmmo_Public()
 void AWeapon::OnRep_Owner()
 {
 	Super::OnRep_Owner();
-	// обновим у клиента HUD на всякий если вдруг не успело сработать у клиента до SetOwner
-	SetHUDAmmo();
+	AMultiplayerCharacter* Character =  Cast<AMultiplayerCharacter>(GetOwner());
+	if (Character)
+	{	// проверим что оружие относиться к основному а не дполнительному, иначе не обновим HUD
+		if (Character->GetCombatComponent()->GetWeapon() == this)
+		{// обновим у клиента HUD на всякий если вдруг не успело сработать у клиента до SetOwner
+			SetHUDAmmo();
+		}
+	}
 }
 
 
@@ -321,7 +331,10 @@ void AWeapon::ShowPickUpWidget(bool bVisibilityWidget)
 	PickUpWidgetComponent->SetVisibility(bVisibilityWidget);
 }
 
-
+void AWeapon::SetbStandardWeapon(const bool InStandardWeapon)
+{
+	bIsStandardWeapon = InStandardWeapon;
+}
 
 
 

@@ -86,6 +86,7 @@ public:
 	FORCEINLINE bool IsCharacterEliminated() const { return bIsEliminated;}
 	FORCEINLINE UStaticMeshComponent* GetGrenadeStaticMesh() const {return GrenadeAttachmentComponent;}
 	FORCEINLINE bool IsCharacterFullHealthy() const { return Health >= MaxHealth; };
+	FORCEINLINE bool IsCharacterFullShield() const { return Shield >= MaxShield; };
 	UFUNCTION(BlueprintCallable)
 	UCombatComponent* GetCombatComponent();
 	UFUNCTION(BlueprintCallable)
@@ -97,10 +98,18 @@ public:
 	bool UpdateHUDHealth();
 
 	bool UpdateHUDShield();
+
+	bool UpdateHUDAmmo();
+
+	bool UpdateHUDCarriedAmmo();
 	/*
 	* Лечение
 	 */
 	void AddHealPoint(float Amount);
+	/*
+	* Восстановление щита
+	 */
+	void AddShieldPoint(float Amount);
 	/*
 	 * Reload
 	 */
@@ -131,6 +140,9 @@ public:
 	FName RightHandSocketName = "RightHandSocket";
 	UPROPERTY(EditDefaultsOnly)
 	FName LeftHandSocketName = "LeftHandSocket";
+	UPROPERTY(EditDefaultsOnly)
+	FName BackpackSocketName = "BackpackSocket";
+	
 protected:
 	virtual void BeginPlay() override;
 	// функция, которая будет скрывать персонажа и оружие когда камера будет близко к игроку
@@ -147,6 +159,8 @@ protected:
 	//28.3 булевая для PollInit для проверки запуска UpdateHudHealth
 	bool bIsHealthInitialized = false;
 
+
+	
 	//27.3 Создадим репликацию для клиента
 	UFUNCTION()
 	void OnRep_Shield(float OldValue);
@@ -161,7 +175,11 @@ protected:
 
 	// функция которая запускатся при окончании ElimTimer после смерти
 	void ElimTimerFinisher();
-
+	//31.3 Спавн стандартного оружия оружия 
+	void SpawnStandardWeapon();
+	//31.4 сделаем переменные которые будут для проверки инцилизирован ли патроны или нет
+	bool bIsAmmoInitialized = false;
+	bool bIsCarriedAmmoInitialized = false;
 	
 	// стрела для камеры
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
@@ -234,6 +252,13 @@ protected:
 	float Shield = 100.f;
 	UPROPERTY(ReplicatedUsing="OnRep_MaxShield")
 	float MaxShield = 100.f;
+
+	//31.2 добавим класс для спавна
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AWeapon> StandartWeaponClass;
+	//31.1 Добавим стандартное(начальное) оружие
+	UPROPERTY()
+	TObjectPtr<AWeapon> StandardWeapon;
 	
 	UPROPERTY()
 	AMultiplayerPlayerController* MultiplayerPlayerController;

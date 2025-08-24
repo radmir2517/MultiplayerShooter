@@ -25,7 +25,8 @@ UCombatComponent::UCombatComponent()
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UCombatComponent,Weapon);
+	DOREPLIFETIME(UCombatComponent,PrimaryEquipWeapon);
+	DOREPLIFETIME(UCombatComponent,SecondaryEquipWeapon);
 	DOREPLIFETIME(UCombatComponent,bIsAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent,CarriedAmmo,COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent,CombatState);
@@ -75,9 +76,9 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			if (MultiplayerHUD)
 			{	
 				// если есть оружие, то будем оттуда брать прицел для каждого оружия если нет то пустые указатели
-				if (Weapon)
+				if (PrimaryEquipWeapon)
 				{
-					HUDPackage = Weapon->GetHudPackage();
+					HUDPackage = PrimaryEquipWeapon->GetHudPackage();
 				}
 				else
 				{
@@ -164,67 +165,82 @@ void UCombatComponent::ChangeFOVForAiming(float DeltaTime)
 
 void UCombatComponent::DropWeapon()
 {
-	if (Weapon)
+	if (PrimaryEquipWeapon)
 	{
-		Weapon->Dropped();
+		PrimaryEquipWeapon->Dropped();
 	}
 }
 
-void UCombatComponent::GetAndUpdateHudCarriedAmmo()
+bool UCombatComponent::GetAndUpdateHudCarriedAmmo()
 {
-	if (!IsValid(Weapon) || !MultiplayerCharacter) return;
+	if (!IsValid(PrimaryEquipWeapon) || !MultiplayerCharacter) return false;
 	
-	if (CarriedAmmoMap.Contains(Weapon->GetWeaponType()))
+	if (CarriedAmmoMap.Contains(PrimaryEquipWeapon->GetWeaponType()))
 	{
-		CarriedAmmo = CarriedAmmoMap[Weapon->GetWeaponType()];
+		CarriedAmmo = CarriedAmmoMap[PrimaryEquipWeapon->GetWeaponType()];
 	}
 	// назначим значение CarriedAmmo для сервера
 	MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(MultiplayerCharacter->Controller) : MultiplayerPlayerController;
 	if (MultiplayerPlayerController)
 	{
-		MultiplayerPlayerController->SetHUDCarriedAmmo(CarriedAmmo);
+		return MultiplayerPlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 	}
+	return false;
 }
 
 void UCombatComponent::SpawnPickUpSound()
 {
-	if (Weapon && Weapon->GetPickUpSound() && MultiplayerCharacter)
+	if (PrimaryEquipWeapon && PrimaryEquipWeapon->GetPickUpSound() && MultiplayerCharacter)
 	{
-		UGameplayStatics::SpawnSoundAttached(Weapon->GetPickUpSound(),MultiplayerCharacter->GetRootComponent());
+		UGameplayStatics::SpawnSoundAttached(PrimaryEquipWeapon->GetPickUpSound(),MultiplayerCharacter->GetRootComponent());
 	}
 }
 
 void UCombatComponent::ReloadAmmoIfEmpty()
 {
-	if (Weapon && Weapon->IsEmpty())
+	if (PrimaryEquipWeapon && PrimaryEquipWeapon->IsEmpty())
 	{
 		Reload();
 	}
 }
 
-void UCombatComponent::AttackWeaponAtSocket(FName SocketName)
+void UCombatComponent::AttackWeaponAtSocket(AWeapon* InWeapon, FName SocketName)
 {
-	if (!MultiplayerCharacter || !Weapon) return;
+	if (!MultiplayerCharacter || !InWeapon) return;
 	const USkeletalMeshSocket* HandSocket = MultiplayerCharacter->GetMesh()->GetSocketByName( SocketName);
 	if (HandSocket)
 	{	// прикрепим к сокету оружие наше
-		HandSocket->AttachActor(Weapon,MultiplayerCharacter->GetMesh());
+		HandSocket->AttachActor(InWeapon,MultiplayerCharacter->GetMesh());
 	}
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* InWeapon)
 {	// проверим что не нулевые
 	if (!IsValid(MultiplayerCharacter) || !IsValid(InWeapon)) return;
+	//31,1 Добавим условия, если есть первичное и нет вторички то надеваю как вторичное
+	if (PrimaryEquipWeapon != nullptr && SecondaryEquipWeapon == nullptr)
+	{
+		EquipSecondaryWeapon(InWeapon);
+	}
+	else
+	{
+		EquipPrimaryWeapon(InWeapon);
+	}
+}
+
+void UCombatComponent::EquipPrimaryWeapon(AWeapon* InWeapon)
+{
+	if (!IsValid(MultiplayerCharacter) || !IsValid(InWeapon)) return;
 	// если в руках уже есть оружие, то выкинем его и поберем новое
 	DropWeapon();
-	
+
 	// назначим переменную оружия
-	Weapon = InWeapon;
+	PrimaryEquipWeapon = InWeapon;
 	// назначим владельца, поменяем статус чтобы он больше не показывал надпись, отключим физику оружия и уберем показывания оружия
-	Weapon->SetOwner(MultiplayerCharacter);
-	Weapon->SetHUDAmmo_Public();
-	Weapon->SetWeaponState(EWeaponState::EWC_Equipped);
-	Weapon->ShowPickUpWidget(false);
+	PrimaryEquipWeapon->SetOwner(MultiplayerCharacter);
+	PrimaryEquipWeapon->SetHUDAmmo_Public();
+	PrimaryEquipWeapon->SetWeaponState(EWeaponState::EWC_Equipped);
+	PrimaryEquipWeapon->ShowPickUpWidget(false);
 
 	// получим значение с карты с CarriedAmmoMap и обновим HUD
 	GetAndUpdateHudCarriedAmmo();
@@ -234,15 +250,30 @@ void UCombatComponent::EquipWeapon(AWeapon* InWeapon)
 	ReloadAmmoIfEmpty();
 	
 	// получим сокет из персонажа и проверим что он существует и прикрепим туда оружие
-	AttackWeaponAtSocket(MultiplayerCharacter->RightHandSocketName);
+	AttackWeaponAtSocket(PrimaryEquipWeapon,MultiplayerCharacter->RightHandSocketName);
 	// отключение у сервера(клиенты в OnRep_Weapon) ориентации по направлению, после подбора и включение поворота персонажа по повороту мыши,
 	// чтобы теперь совпадали поворот мыши и персонажа
 	MultiplayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
 	MultiplayerCharacter->bUseControllerRotationYaw = true;
 }
 
+void UCombatComponent::EquipSecondaryWeapon(AWeapon* InWeapon)
+{
+	if (!IsValid(MultiplayerCharacter) || !IsValid(InWeapon)) return;
 
-void UCombatComponent::OnRep_Weapon()
+	// назначим переменную оружия
+	SecondaryEquipWeapon = InWeapon;
+	// назначим владельца, поменяем статус чтобы он больше не показывал надпись, отключим физику оружия и уберем показывания оружия
+	SecondaryEquipWeapon->SetOwner(MultiplayerCharacter);
+	SecondaryEquipWeapon->SetWeaponState(EWeaponState::EWC_Equipped);
+	SecondaryEquipWeapon->ShowPickUpWidget(false);
+
+	// получим сокет из персонажа и проверим что он существует и прикрепим туда оружие
+	AttackWeaponAtSocket(SecondaryEquipWeapon,MultiplayerCharacter->BackpackSocketName);
+}
+
+
+void UCombatComponent::OnRep_PrimaryEquipWeapon()
 {
 	if (MultiplayerCharacter && MultiplayerCharacter->GetCharacterMovement())
 	{
@@ -252,13 +283,27 @@ void UCombatComponent::OnRep_Weapon()
 		MultiplayerCharacter->bUseControllerRotationYaw = true;
 
 		// меняем статус на всякий тоже и тут чтобы у клиентов не включилась физика у оружии при подборе
-		Weapon->SetWeaponState(EWeaponState::EWC_Equipped);
+		PrimaryEquipWeapon->SetWeaponState(EWeaponState::EWC_Equipped);
 		// прикрепляеи оружие на сокет в правой руке
-		AttackWeaponAtSocket(MultiplayerCharacter->RightHandSocketName);
+		AttackWeaponAtSocket(PrimaryEquipWeapon,MultiplayerCharacter->RightHandSocketName);
 		// спавн звука поднимания оружия
 		SpawnPickUpSound();
 		// если после подбора пустая обойма перезарядим ее
 		ReloadAmmoIfEmpty();
+	}
+}
+
+
+void UCombatComponent::OnRep_SecondaryEquipWeapon()
+{
+	if (MultiplayerCharacter)
+	{
+		// меняем статус на всякий тоже и тут чтобы у клиентов не включилась физика у оружии при подборе
+		SecondaryEquipWeapon->SetWeaponState(EWeaponState::EWC_Equipped);
+		// прикрепляеи оружие на сокет в правой руке
+		AttackWeaponAtSocket(SecondaryEquipWeapon,MultiplayerCharacter->BackpackSocketName);
+		// спавн звука поднимания оружия
+		SpawnPickUpSound();
 	}
 }
 
@@ -314,7 +359,7 @@ void UCombatComponent::StartAutomaticFire()
 		bFirstFire=true;
 		
 		// 18.9 при стрельбе у дробовика поставим в незанятый т.к можем прервать перезарядку
-		if (Weapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+		if (PrimaryEquipWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
 		{
 			CombatState = ECombatState::ECT_Unoccupied;
 		}
@@ -384,7 +429,7 @@ void UCombatComponent::OnRep_CarriedAmmo()
 	{
 		MultiplayerPlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 		// 18.9 у клиента при обновление патронов если этол дробовик сообщим что можно стрелять не до заряжаясь 
-		if (Weapon && Weapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+		if (PrimaryEquipWeapon && PrimaryEquipWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
 		{
 			bCanFire = true;
 		}
@@ -695,7 +740,7 @@ void UCombatComponent::HandleThrowGrenade()
 	{
 		MultiplayerCharacter->PlayThrowGrenadeMontage();
 		//20.1 перекладывания основного оружия в левую руку
-		AttackWeaponAtSocket(MultiplayerCharacter->LeftHandSocketName);
+		AttackWeaponAtSocket(PrimaryEquipWeapon,MultiplayerCharacter->LeftHandSocketName);
 		SetVisibilityToGrenade(true);
 	}
 }
@@ -706,7 +751,7 @@ void UCombatComponent::ThrowGrenadeFinished()
 	{
 		CombatState = ECombatState::ECT_Unoccupied;
 		//20.2 перекладывания основного оружия обратно в правую
-		AttackWeaponAtSocket(MultiplayerCharacter->RightHandSocketName);
+		AttackWeaponAtSocket(PrimaryEquipWeapon,MultiplayerCharacter->RightHandSocketName);
 	}
 }
 
@@ -781,7 +826,7 @@ void UCombatComponent::PickUpAmmo(EWeaponType WeaponType, int32 AmmoAmount)
 	{
 		CarriedAmmoMap[WeaponType] += AmmoAmount;
 		GetAndUpdateHudCarriedAmmo();
-		if (Weapon && Weapon->IsEmpty() && Weapon->GetWeaponType() == WeaponType)
+		if (PrimaryEquipWeapon && PrimaryEquipWeapon->IsEmpty() && PrimaryEquipWeapon->GetWeaponType() == WeaponType)
 		{
 			ReloadAmmoIfEmpty();
 		}
