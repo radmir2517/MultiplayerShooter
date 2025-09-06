@@ -113,7 +113,6 @@ void AWeapon::SetHUDAmmo_Public()
 	SetHUDAmmo();
 }
 
-
 void AWeapon::OnRep_Owner()
 {
 	Super::OnRep_Owner();
@@ -126,7 +125,6 @@ void AWeapon::OnRep_Owner()
 		}
 	}
 }
-
 
 void AWeapon::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                    bool bFromSweep, const FHitResult& SweepResult)
@@ -157,43 +155,11 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 }
 
 void AWeapon::SetWeaponState(EWeaponState InWeaponState)
-{	// поменяем состояние 
+{
+	// поменяем состояние 
 	WeaponState = InWeaponState;
 	// и проверим у сервера получается, какое состояние и отключим overlap у AreaSphere
-	switch (WeaponState)
-	{
-	case EWeaponState::EWC_Equipped:
-		PickUpWidgetComponent->SetVisibility(false);
-		GetWeaponMesh()->SetSimulatePhysics(false);
-		GetWeaponMesh()->SetEnableGravity(false);
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//13.1 Добавим включение физики для узи, чтобы ремешок его работал
-		if (WeaponType == EWeaponType::EWT_SMG)
-		{
-			GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
-			GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			GetWeaponMesh()->SetEnableGravity(true);
-		}
-		// 19.3 выключим подсветку т.к оружие в руках
-		SetRenderCustomDepth(false);
-		break;
-		
-	case EWeaponState::EWC_Dropped:
-		if (HasAuthority())
-		{
-			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		}
-		GetWeaponMesh()->SetSimulatePhysics(true);
-		GetWeaponMesh()->SetEnableGravity(true);
-		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		//13.2 Добавим 2 строки чтобы потом узи тоже после dropped реагировала на все кроме игроков
-		GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Block);
-		GetWeaponMesh()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
-		// 19.4 включим подсветку т.к оружие уже не в руках
-		SetRenderCustomDepth(true);
-		break;
-	}
+	OnWeaponState();
 }
 
 void AWeapon::OnRep_WeaponState()
@@ -201,24 +167,87 @@ void AWeapon::OnRep_WeaponState()
 	switch (WeaponState)
 	{
 	case EWeaponState::EWC_Equipped:
-		PickUpWidgetComponent->SetVisibility(false);
-		GetWeaponMesh()->SetSimulatePhysics(false);
-		GetWeaponMesh()->SetEnableGravity(false);
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		// 19.3 выключим подсветку т.к оружие в руках
-		SetRenderCustomDepth(false);
+		OnEquippedState();
 		break;
 		// если оружие должно упасть при смерти то включим физику и коллизии
 	case EWeaponState::EWC_Dropped:
-		GetWeaponMesh()->SetSimulatePhysics(true);
-		GetWeaponMesh()->SetEnableGravity(true);
-		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		// 19.4 включим подсветку т.к оружие уже не в руках
-		SetRenderCustomDepth(true);
+		OnDroppedState();
+		break;
+	case EWeaponState::EWC_SecondaryEquipped:
+		OnSecondaryEquipped();
 		break;
 	}
 }
+
+void AWeapon::OnWeaponState()
+{
+	switch (WeaponState)
+	{
+	case EWeaponState::EWC_Equipped:
+		OnEquippedState();
+		break;
+		
+	case EWeaponState::EWC_Dropped:
+		OnDroppedState();
+		break;
+	
+	case EWeaponState::EWC_SecondaryEquipped:
+	OnSecondaryEquipped();
+	break;
+	}
+}
+
+void AWeapon::OnSecondaryEquipped()
+{
+	PickUpWidgetComponent->SetVisibility(false);
+	GetWeaponMesh()->SetSimulatePhysics(false);
+	GetWeaponMesh()->SetEnableGravity(false);
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//13.1 Добавим включение физики для узи, чтобы ремешок его работал
+	if (WeaponType == EWeaponType::EWT_SMG)
+	{
+		GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetWeaponMesh()->SetEnableGravity(true);
+	}
+	// 19.3 выключим подсветку т.к оружие в руках
+	SetRenderCustomDepth(false);
+}
+
+void AWeapon::OnEquippedState()
+{
+	PickUpWidgetComponent->SetVisibility(false);
+	GetWeaponMesh()->SetSimulatePhysics(false);
+	GetWeaponMesh()->SetEnableGravity(false);
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//13.1 Добавим включение физики для узи, чтобы ремешок его работал
+	if (WeaponType == EWeaponType::EWT_SMG)
+	{
+		GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+		GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetWeaponMesh()->SetEnableGravity(true);
+	}
+	// 19.3 выключим подсветку т.к оружие в руках
+	SetRenderCustomDepth(false);
+}
+void AWeapon::OnDroppedState()
+{
+	if (HasAuthority())
+	{
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+	GetWeaponMesh()->SetSimulatePhysics(true);
+	GetWeaponMesh()->SetEnableGravity(true);
+	GetWeaponMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//13.2 Добавим 2 строки чтобы потом узи тоже после dropped реагировала на все кроме игроков
+	GetWeaponMesh()->SetCollisionResponseToAllChannels(ECR_Block);
+	GetWeaponMesh()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
+	// 19.4 включим подсветку т.к оружие уже не в руках
+	SetRenderCustomDepth(true);
+}
+
 //19.2 включение/выключение влияние CustomDepth постпроцесса на оружие
 void AWeapon::SetRenderCustomDepth(bool bSetEnabled)
 {

@@ -175,6 +175,7 @@ protected:
 
 	// функция которая запускатся при окончании ElimTimer после смерти
 	void ElimTimerFinisher();
+	void DropOrDestroyWeapon();
 	//31.3 Спавн стандартного оружия оружия 
 	void SpawnStandardWeapon();
 	//31.4 сделаем переменные которые будут для проверки инцилизирован ли патроны или нет

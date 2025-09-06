@@ -43,7 +43,7 @@ public:
 	FORCEINLINE UUserWidget* GetCharacterOverlayWidget() {return CharacterOverlayWidget;}
 	FORCEINLINE UAnnouncementWidget* GetAnnouncementWidget() {return AnnouncementWidget;}
 	// получим контроллер и создадим виджет
-	UUserWidget* CreateOverlayWidget();
+	UUserWidget* CreateOrGetOverlayWidget();
 	// 1.3 получим контроллер и создадим виджет
 	UFUNCTION()
 	UAnnouncementWidget* CreateAnnouncementWidget();

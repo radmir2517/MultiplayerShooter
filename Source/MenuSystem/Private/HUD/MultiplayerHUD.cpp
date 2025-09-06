@@ -44,8 +44,9 @@ void AMultiplayerHUD::DrawHUD()
 	}
 }
 
-UUserWidget* AMultiplayerHUD::CreateOverlayWidget()
+UUserWidget* AMultiplayerHUD::CreateOrGetOverlayWidget()
 {
+	if (CharacterOverlayWidget) {return CharacterOverlayWidget;}
 	APlayerController* PlayerController = GetOwningPlayerController();
 	AMultiplayerPlayerController* MultiplayerPlayerController = nullptr;
 	MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(PlayerController) : MultiplayerPlayerController;
@@ -53,6 +54,7 @@ UUserWidget* AMultiplayerHUD::CreateOverlayWidget()
 	{
 		CharacterOverlayWidget = CreateWidget(PlayerController,CharacterOverlayClass);
 		CharacterOverlayWidget->AddToViewport();
+		
 		if (MultiplayerPlayerController)
 		{	// 24.14 после создания виджета обновим значения гранат
 			MultiplayerPlayerController->OnInitializeOverlayInitializedDelegate.Execute(true);

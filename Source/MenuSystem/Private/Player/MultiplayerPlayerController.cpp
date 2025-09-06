@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/MultiplayerCharacter.h"
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/Character.h"
@@ -23,7 +24,7 @@
 AMultiplayerPlayerController::AMultiplayerPlayerController()
 {
 	bReplicates = true;
-
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AMultiplayerPlayerController::BeginPlay()
@@ -51,7 +52,20 @@ void AMultiplayerPlayerController::BeginPlay()
 	}
 	// 24.12 Привяжемся к делегату который вызовется при создание виджета Overlay и обнвоим значение гранаты
 	OnInitializeOverlayInitializedDelegate.BindUObject(this, &AMultiplayerPlayerController::HandleOverlayCreated);
-	
+
+	// 25. Запустим таймер проверки пинга каждую секунду
+	GetWorldTimerManager().SetTimer(HighPingTimerCheck,this,&AMultiplayerPlayerController::PingCheck, 1.f,true);
+}
+
+void AMultiplayerPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	MultiplayerGameState = MultiplayerGameState ? MultiplayerGameState : MultiplayerGameState = Cast<AMultiplayerGameState>(UGameplayStatics::GetGameState(this));
+	if (MultiplayerGameState)
+	{
+		
+	}
 }
 
 void AMultiplayerPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -260,15 +274,15 @@ bool AMultiplayerPlayerController::SetHUDHealth(const float Health, const float 
 	
 	if (MultiplayerHUD)
 	{	// получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
-		if (CharacterOverlay && CharacterOverlay->HealthBar && CharacterOverlay->HealthText)
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		if (CharacterOverlayWidget && CharacterOverlayWidget->HealthBar && CharacterOverlayWidget->HealthText)
 		{	// превратим в процент
 			float HealthPercent = (Health/MaxHealth);
 			// назначим в прогресс бар
-			CharacterOverlay->HealthBar->SetPercent(HealthPercent);
+			CharacterOverlayWidget->HealthBar->SetPercent(HealthPercent);
 			// также превратим цифры в текст и назначим в блок текст
 			FString HealthText = FString::Printf(TEXT("%i/%i"),  FMath::CeilToInt32(Health), FMath::CeilToInt32(MaxHealth));
-			CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
+			CharacterOverlayWidget->HealthText->SetText(FText::FromString(HealthText));
 			return true;
 		}
 		else
@@ -289,11 +303,11 @@ void AMultiplayerPlayerController::SetHUDScore(const float Score)
 	
 	if (MultiplayerHUD)
 	{	// получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
-		if (CharacterOverlay && CharacterOverlay->ScopeAmount)
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		if (CharacterOverlayWidget && CharacterOverlayWidget->ScopeAmount)
 		{	// превратим значение Scope в текст и назначим виджету
 			FString ScopeText = FString::Printf(TEXT("%i"),  FMath::CeilToInt32(Score));
-			CharacterOverlay->ScopeAmount->SetText(FText::FromString(ScopeText));
+			CharacterOverlayWidget->ScopeAmount->SetText(FText::FromString(ScopeText));
 		}
 	}
 }
@@ -305,11 +319,11 @@ void AMultiplayerPlayerController::SetHUDDefeats(int32 Defeats)
 	
 	if (MultiplayerHUD)
 	{	// получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
-		if (CharacterOverlay && CharacterOverlay->DefeatsAmount)
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		if (CharacterOverlayWidget && CharacterOverlayWidget->DefeatsAmount)
 		{	// превратим значение Defeats в текст и назначим виджету
 			FString DefeatsText = FString::Printf(TEXT("%i"), Defeats);
-			CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+			CharacterOverlayWidget->DefeatsAmount->SetText(FText::FromString(DefeatsText));
 		}
 	}
 }
@@ -321,11 +335,11 @@ bool AMultiplayerPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 	
 	if (MultiplayerHUD)
 	{	// получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
-		if (CharacterOverlay && CharacterOverlay->WeaponAmmoAmount)
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		if (CharacterOverlayWidget && CharacterOverlayWidget->WeaponAmmoAmount)
 		{	// превратим значение Ammo в текст и назначим виджету
 			FString AmmoText = FString::Printf(TEXT("%i"), Ammo);
-			CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+			CharacterOverlayWidget->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
 			return true;
 		}
 		else {return false;}
@@ -340,11 +354,11 @@ bool AMultiplayerPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmo)
 	
 	if (MultiplayerHUD)
 	{	// получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
-		if (CharacterOverlay && CharacterOverlay->CarriedAmmo)
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		if (CharacterOverlayWidget && CharacterOverlayWidget->CarriedAmmo)
 		{	// превратим значение Ammo в текст и назначим виджету
 			FString CarriedAmmoText = FString::Printf(TEXT("%i"), CarriedAmmo);
-			CharacterOverlay->CarriedAmmo->SetText(FText::FromString(CarriedAmmoText));
+			CharacterOverlayWidget->CarriedAmmo->SetText(FText::FromString(CarriedAmmoText));
 			return true;
 		}
 		else {return false;}
@@ -364,16 +378,16 @@ void AMultiplayerPlayerController::SetHUDMatchCountDown(int32 CountDownTime)
 	
 	if (MultiplayerHUD)
 	{	// получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
 		
-		if (CharacterOverlay && CharacterOverlay->MatchCountdownText)
+		if (CharacterOverlayWidget && CharacterOverlayWidget->MatchCountdownText)
 		{
 			// 4.53 Добавим проверку нуля
-			if (CountDownTime < 0) CharacterOverlay->MatchCountdownText->SetText(FText());
+			if (CountDownTime < 0) CharacterOverlayWidget->MatchCountdownText->SetText(FText());
 			
 			// превратим значение Ammo в текст и назначим виджету
 			FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
-			CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountdownText));
+			CharacterOverlayWidget->MatchCountdownText->SetText(FText::FromString(CountdownText));
 		}
 	}
 }
@@ -457,11 +471,11 @@ void AMultiplayerPlayerController::SetHUDGrenadesAmount(int32 GrenadesAmount)
 	
 	if (MultiplayerHUD)
 	{	// 24.3 получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
-		if (CharacterOverlay && CharacterOverlay->GrenadesAmount)
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		if (CharacterOverlayWidget && CharacterOverlayWidget->GrenadesAmount)
 		{	// 24.4 превратим значение GrenadesAmmo в текст и назначим виджету
 			FString GrenadesAmountText = FString::Printf(TEXT("%i"), GrenadesAmount);
-			CharacterOverlay->GrenadesAmount->SetText(FText::FromString(GrenadesAmountText));
+			CharacterOverlayWidget->GrenadesAmount->SetText(FText::FromString(GrenadesAmountText));
 		}
 	}
 }
@@ -473,15 +487,16 @@ bool AMultiplayerPlayerController::SetHUDShield(const float Shield, const float 
 	
 	if (MultiplayerHUD)
 	{	// получим виджет оверлея
-		UCharacterOverlay* CharacterOverlay = Cast<UCharacterOverlay> (MultiplayerHUD->GetCharacterOverlayWidget());
-		if (CharacterOverlay && CharacterOverlay->ShieldBar && CharacterOverlay->ShieldText)
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		
+		if (CharacterOverlayWidget && CharacterOverlayWidget->ShieldBar && CharacterOverlayWidget->ShieldText)
 		{	// превратим в процент
 			float ShieldPercent = (Shield/MaxShield);
 			// назначим в прогресс бар
-			CharacterOverlay->ShieldBar->SetPercent(ShieldPercent);
+			CharacterOverlayWidget->ShieldBar->SetPercent(ShieldPercent);
 			// также превратим цифры в текст и назначим в блок текст
 			FString ShieldText = FString::Printf(TEXT("%i/%i"),  FMath::CeilToInt32(Shield), FMath::CeilToInt32(MaxShield));
-			CharacterOverlay->ShieldText->SetText(FText::FromString(ShieldText));
+			CharacterOverlayWidget->ShieldText->SetText(FText::FromString(ShieldText));
 			return true;
 		}
 		else
@@ -605,6 +620,60 @@ void AMultiplayerPlayerController::CheckTimeSync()
 	ServerRequestServerTime(GetWorld()->GetTimeSeconds());
 }
 
+void AMultiplayerPlayerController::PingCheck()
+{	// проверим что у нас есть PlayerState
+	if (!PlayerState) return;
+	if (PlayerState->GetPingInMilliseconds() >= HighTresholdForPing)
+	{	// если пинг больше 50 то будем прибавлять время пройденное с высоким пингом
+		HighPingTimePast++;
+		if (HighPingTimePast >= TimeToCooldownHighPingWarning)
+		{// проверим прошло времени больше 20 сек и запустим анимацию картинки о высокм пинге
+			HighPingWarning();
+			HighOingAnimationTimePast++;
+			if (HighOingAnimationTimePast >= HighPingWarningTimePlayAnimation)
+			{	// если прошло еще 5 сек то выключаем анимацию
+				StopAnimationHighPing();
+				HighOingAnimationTimePast = 0.f;
+				HighPingTimePast = 0.f;
+			}
+		}
+	}
+	else {StopAnimationHighPing();}
+}
+
+void AMultiplayerPlayerController::HighPingWarning()
+{
+	MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
+	if (MultiplayerHUD)
+	{
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		if (CharacterOverlayWidget && CharacterOverlayWidget->HighPingImage && CharacterOverlayWidget->HighPingAnimation)
+		{	// сделаем видимым картинку пинга и запустим анимацию
+			CharacterOverlayWidget->HighPingImage->SetOpacity(1.f);
+			CharacterOverlayWidget->PlayAnimation(CharacterOverlayWidget->HighPingAnimation,0.f,5);
+		}
+	}
+}
+
+void AMultiplayerPlayerController::StopAnimationHighPing()
+{
+	MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
+	if (MultiplayerHUD)
+	{
+		CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->GetCharacterOverlayWidget()));
+		// уберем видимость виджета и остановим анимацию
+		bool IsAnimationPlaying = CharacterOverlayWidget
+		&& CharacterOverlayWidget->HighPingImage
+		&& CharacterOverlayWidget->HighPingAnimation
+		&& CharacterOverlayWidget->IsAnimationPlaying(CharacterOverlayWidget->HighPingAnimation);
+		if (IsAnimationPlaying)
+		{
+			CharacterOverlayWidget->HighPingImage->SetOpacity(0.f);
+			CharacterOverlayWidget->StopAnimation(CharacterOverlayWidget->HighPingAnimation);
+		}
+	}
+}
+
 void AMultiplayerPlayerController::OnMatchStateSet(FName InMatchState)
 {// при изменения состояния MatchState на сервере изменим переменную созданную вручную в PlayerController
 	if (!HasAuthority()) return;
@@ -653,7 +722,8 @@ void AMultiplayerPlayerController::HandleMatchHasStarted()
 	SetInputMode(ModeGameOnly);
 	// создадим виджет главный
 	if (!MultiplayerHUD) return;
-	CharacterOverlayWidget = MultiplayerHUD->CreateOverlayWidget();
+	CharacterOverlayWidget = CharacterOverlayWidget ? CharacterOverlayWidget : TObjectPtr<UCharacterOverlay>(Cast<UCharacterOverlay>(MultiplayerHUD->CreateOrGetOverlayWidget()));
+	
 
 	if (!CharacterOverlayWidget) return;
 	AMultiplayerCharacter* MultiplayerCharacter = Cast<AMultiplayerCharacter>(GetPawn());

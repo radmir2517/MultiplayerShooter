@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "UI/AnnouncementWidget.h"
+#include "UI/CharacterOverlay.h"
 #include "MultiplayerPlayerController.generated.h"
 
 class AMultiplayerGameState;
@@ -28,7 +29,7 @@ public:
 
 	AMultiplayerPlayerController();
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
@@ -133,21 +134,47 @@ protected:
 	float GetServerTime();
 	// для таймера, запуск ServerRequestServerTime
 	void CheckTimeSync();
+
+
+	//
+	// HighPing
+	//
+	// 25.8 функция для таймера, проверка пинга
+	void PingCheck();
+	// 25.9 воспроизведения анимации высокого пинга и включение картинки
+	void HighPingWarning();
+	// 25,10 останвока анимации и скрывания картинки
+	void StopAnimationHighPing();
 	
 
-	// таймер который какждый TimeToSyncTimer выполняет ServerRequestServerTime
+	// 25.1 таймер который какждый TimeToSyncTimer выполняет ServerRequestServerTime
 	FTimerHandle SyncTimerHandle;
-	// разница во временим между клиетом и сервером
+	// 25.2  разница во временим между клиетом и сервером
 	float ClientServerDelta = 0.f;
-	// период каждой синхронизации времени между клиентов и сервером
+	// 25.3 период каждой синхронизации времени между клиентов и сервером
 	float TimeToSyncTimer = 5.f;
+	// 25.5 время воспроизведения анимации
+	UPROPERTY(EditDefaultsOnly)
+	float HighPingWarningTimePlayAnimation = 5.f;
+	// 25.6 время после которого включается уведомление о высоком пинге
+	UPROPERTY(EditDefaultsOnly)
+	float TimeToCooldownHighPingWarning = 10.f;
+	// 25.7 порог пинга при котором будет осчитывать таймер и влкючать предупреждение
+	UPROPERTY(EditDefaultsOnly)
+	float HighTresholdForPing = 50.f;
+	// 25.4  время которое отсчитал таймер с большим пингом
+	float HighPingTimePast = 0.f;
+	float HighOingAnimationTimePast = 0.f;
+	// теймер для проверки пинга
+	FTimerHandle HighPingTimerCheck;
 
+	
 	// состояние матча
 	UPROPERTY(ReplicatedUsing="OnRep_MatchState")
 	FName MatchState;
-	// виджет
+	// виджет нашего пресонажа
 	UPROPERTY()
-	TObjectPtr<UUserWidget> CharacterOverlayWidget;
+	TObjectPtr<UCharacterOverlay> CharacterOverlayWidget;
 	// состояние матча реплицированное
 	UFUNCTION()
 	void OnRep_MatchState();
@@ -157,6 +184,7 @@ protected:
 	void HandleMatchCooldown();
 	// 24. После создания виджета в HUD мы обновим значение гранат
 	void HandleOverlayCreated(bool bOverlayCreated);
+	
 private:
 	// 2.1 время игры
 	int32 MatchTime = 0;

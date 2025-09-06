@@ -41,6 +41,7 @@ public:
 
 	FORCEINLINE AMultiplayerCharacter* GetMultiplayerCharacter() { return MultiplayerCharacter; }
 	FORCEINLINE AWeapon* GetWeapon() { return PrimaryEquipWeapon; }
+	FORCEINLINE AWeapon* GetSecondaryWeapon() { return SecondaryEquipWeapon; }
 	FORCEINLINE bool GetIsAiming() { return bIsAiming; }
 	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
 	FORCEINLINE int32 GetGrenadesAmount() { return GrenadesAmount; }
@@ -118,6 +119,9 @@ public:
 	void PickUpAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 	// 20.1 функции созданные для EquipWeapon для сокращения написания кода в EquipWeapon
 	bool GetAndUpdateHudCarriedAmmo();
+
+	UFUNCTION(Server, Reliable)
+	void SwapWeapon();
 protected:
 	virtual void BeginPlay() override;
 	// функция репликация для оружия
@@ -126,6 +130,7 @@ protected:
 	// функция репликация для оружия
 	UFUNCTION()
 	void OnRep_SecondaryEquipWeapon();
+
 	
 	//функция которая будет получать с оружия картинки прицела и отправлять в HUD каждый кадр
 	void SetHUDCrosshairs(float DeltaTime);
@@ -156,7 +161,6 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_PrimaryEquipWeapon, BlueprintReadOnly)
 	TObjectPtr<AWeapon> PrimaryEquipWeapon;
 	
-
 	UPROPERTY(ReplicatedUsing=OnRep_SecondaryEquipWeapon, BlueprintReadOnly)
 	TObjectPtr<AWeapon> SecondaryEquipWeapon;
 	UPROPERTY(Replicated)
@@ -232,7 +236,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="CarriedAmmo")
 	int32 StartingGrenadeLauncherAmmo = 5;
 	
-	
 	/*
 	 * Гранаты
 	 */
@@ -250,13 +253,15 @@ protected:
 	// 24.7 Функция репликация для гранат
 	UFUNCTION()
 	void OnRep_GrenadesAmount();
+
+	
 	
 private:
 	bool bIsStartingReloading = false;
 
 	// 20.1 функции созданные для EquipWeapon для сокращения написания кода в EquipWeapon
 	void DropWeapon();
-	void SpawnPickUpSound();
+	void SpawnPickUpSound(AWeapon* InEquippedWeapon);
 	void ReloadAmmoIfEmpty();
 	void AttackWeaponAtSocket(AWeapon* InWeapon,FName SocketName);
 };

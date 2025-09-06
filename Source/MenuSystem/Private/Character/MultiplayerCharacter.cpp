@@ -445,11 +445,8 @@ void AMultiplayerCharacter::MulticastElim_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	// включим выпадение оружия и поменяем статус у оружия
-	if (GetWeapon())
-	{
-		GetWeapon()->Dropped();
-	}
-
+	DropOrDestroyWeapon();
+	
 	/*
 	*  Elim бот эффект и звук
 	*/
@@ -459,6 +456,21 @@ void AMultiplayerCharacter::MulticastElim_Implementation()
 	ElimBotParticleComponent = UGameplayStatics::SpawnEmitterAtLocation(this,ElimBotParticle,ElimParticleSpawnPoint,GetActorRotation());
 	UGameplayStatics::SpawnSoundAtLocation(this, ElimSound,ElimParticleSpawnPoint,GetActorRotation());
 	
+}
+
+void AMultiplayerCharacter::DropOrDestroyWeapon()
+{	
+	if (GetCombatComponent())
+	{
+		if (GetWeapon() )
+		{
+			GetWeapon()->Dropped();
+		}
+		if (GetCombatComponent()->GetSecondaryWeapon())
+		{
+			GetCombatComponent()->GetSecondaryWeapon()->Dropped();
+		}
+	}
 }
 
 void AMultiplayerCharacter::ElimMontagePlay()
@@ -770,14 +782,16 @@ void AMultiplayerCharacter::EquipWeapon()
 			ServerEquipWeapon();
 		}
 	}
+	else if (CombatComponent && CombatComponent->GetSecondaryWeapon())
+	{
+		CombatComponent->SwapWeapon();
+	}
 }
 
 void AMultiplayerCharacter::ServerEquipWeapon_Implementation()
 {
 	CombatComponent->EquipWeapon(OverlappingWeapon);
 }
-
-
 
 // 5.3 получение булевой выключения управление и вращения когда GameState == Cooldown
 bool AMultiplayerCharacter::IsDisabledGameplay()

@@ -21,6 +21,7 @@ enum class EWeaponState : uint8
 {
 	EWC_Initial UMETA(DisplayName = "Initial"),
 	EWC_Equipped UMETA(DisplayName = "Equipped"),
+	EWC_SecondaryEquipped UMETA(DisplayName = "SecondaryEquipped"),
 	EWC_Dropped UMETA(DisplayName = "Dropped"),
 
 	EWC_MAX UMETA(DisplayName = "DefaultMAX")
@@ -86,6 +87,10 @@ protected:
 	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnEquippedState();
+	void OnDroppedState();
+	void OnWeaponState();
+	void OnSecondaryEquipped();
 	UFUNCTION()
 	void OnRep_WeaponState();
 	//19.1 включение/выключение влияние CustomDepth постпроцесса на оружие

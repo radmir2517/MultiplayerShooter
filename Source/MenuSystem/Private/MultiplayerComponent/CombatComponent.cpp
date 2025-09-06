@@ -188,11 +188,39 @@ bool UCombatComponent::GetAndUpdateHudCarriedAmmo()
 	return false;
 }
 
-void UCombatComponent::SpawnPickUpSound()
+void UCombatComponent::SwapWeapon_Implementation()
 {
-	if (PrimaryEquipWeapon && PrimaryEquipWeapon->GetPickUpSound() && MultiplayerCharacter)
+	if (IsValid(PrimaryEquipWeapon) && IsValid(SecondaryEquipWeapon))
 	{
-		UGameplayStatics::SpawnSoundAttached(PrimaryEquipWeapon->GetPickUpSound(),MultiplayerCharacter->GetRootComponent());
+		TObjectPtr<AWeapon> TempWeapon = PrimaryEquipWeapon;
+		PrimaryEquipWeapon = SecondaryEquipWeapon;
+		SecondaryEquipWeapon = TempWeapon;
+
+		PrimaryEquipWeapon->SetHUDAmmo_Public();
+		PrimaryEquipWeapon->SetWeaponState(EWeaponState::EWC_Equipped);
+
+		// получим значение с карты с CarriedAmmoMap и обновим HUD
+		GetAndUpdateHudCarriedAmmo();
+		// спавн звука поднимания оружия
+		SpawnPickUpSound(PrimaryEquipWeapon);
+		// перезарядка оружия если пустое
+		ReloadAmmoIfEmpty();
+	
+		// получим сокет из персонажа и проверим что он существует и прикрепим туда оружие
+		AttackWeaponAtSocket(PrimaryEquipWeapon,MultiplayerCharacter->RightHandSocketName);
+		// отключение у сервера(клиенты в OnRep_Weapon) ориентации по направлению, после подбора и включение поворота персонажа по повороту мыши,
+
+		SecondaryEquipWeapon->SetWeaponState(EWeaponState::EWC_SecondaryEquipped);
+		// получим сокет из персонажа и проверим что он существует и прикрепим туда оружие
+		AttackWeaponAtSocket(SecondaryEquipWeapon,MultiplayerCharacter->BackpackSocketName);
+	}
+}
+
+void UCombatComponent::SpawnPickUpSound(AWeapon* InEquippedWeapon)
+{
+	if (InEquippedWeapon && InEquippedWeapon->GetPickUpSound() && MultiplayerCharacter)
+	{
+		UGameplayStatics::SpawnSoundAttached(InEquippedWeapon->GetPickUpSound(),MultiplayerCharacter->GetRootComponent());
 	}
 }
 
@@ -245,7 +273,7 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* InWeapon)
 	// получим значение с карты с CarriedAmmoMap и обновим HUD
 	GetAndUpdateHudCarriedAmmo();
 	// спавн звука поднимания оружия
-	SpawnPickUpSound();
+	SpawnPickUpSound(PrimaryEquipWeapon);
 	// перезарядка оружия если пустое
 	ReloadAmmoIfEmpty();
 	
@@ -265,8 +293,11 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* InWeapon)
 	SecondaryEquipWeapon = InWeapon;
 	// назначим владельца, поменяем статус чтобы он больше не показывал надпись, отключим физику оружия и уберем показывания оружия
 	SecondaryEquipWeapon->SetOwner(MultiplayerCharacter);
-	SecondaryEquipWeapon->SetWeaponState(EWeaponState::EWC_Equipped);
+	SecondaryEquipWeapon->SetWeaponState(EWeaponState::EWC_SecondaryEquipped);
 	SecondaryEquipWeapon->ShowPickUpWidget(false);
+
+	// спавн звука поднимания оружия
+	SpawnPickUpSound(SecondaryEquipWeapon);
 
 	// получим сокет из персонажа и проверим что он существует и прикрепим туда оружие
 	AttackWeaponAtSocket(SecondaryEquipWeapon,MultiplayerCharacter->BackpackSocketName);
@@ -287,7 +318,7 @@ void UCombatComponent::OnRep_PrimaryEquipWeapon()
 		// прикрепляеи оружие на сокет в правой руке
 		AttackWeaponAtSocket(PrimaryEquipWeapon,MultiplayerCharacter->RightHandSocketName);
 		// спавн звука поднимания оружия
-		SpawnPickUpSound();
+		SpawnPickUpSound(PrimaryEquipWeapon);
 		// если после подбора пустая обойма перезарядим ее
 		ReloadAmmoIfEmpty();
 	}
@@ -299,11 +330,11 @@ void UCombatComponent::OnRep_SecondaryEquipWeapon()
 	if (MultiplayerCharacter)
 	{
 		// меняем статус на всякий тоже и тут чтобы у клиентов не включилась физика у оружии при подборе
-		SecondaryEquipWeapon->SetWeaponState(EWeaponState::EWC_Equipped);
+		SecondaryEquipWeapon->SetWeaponState(EWeaponState::EWC_SecondaryEquipped);
 		// прикрепляеи оружие на сокет в правой руке
 		AttackWeaponAtSocket(SecondaryEquipWeapon,MultiplayerCharacter->BackpackSocketName);
 		// спавн звука поднимания оружия
-		SpawnPickUpSound();
+		SpawnPickUpSound(SecondaryEquipWeapon);
 	}
 }
 
