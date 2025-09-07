@@ -72,8 +72,11 @@ void AShotgun::OpenFire(const FVector_NetQuantize& TargetPoint)
 				// если есть звук, то воспроизвести
 				UGameplayStatics::PlaySoundAtLocation(this, HitSound, OutHit.Location);
 			}
-			// 12.1 поправим и сделаем отображение HitEffect и звука на клиенетах
-			Client_SpawnHitEffectSound(this, OutHit.Location);
+			if (HasAuthority())
+			{
+				// 12.1 поправим и сделаем отображение HitEffect и звука на клиенетах
+				Client_SpawnHitEffectSound(this, OutHit.Location);
+			}
 		}
 	}
 	//14.4 применим урон, считав с карты по кому попали и сколько раз попали

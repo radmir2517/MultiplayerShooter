@@ -67,8 +67,9 @@ public:
 	
 	// введем серверную функцию чтобы, воспроизводить анимацию, а потом через него сделаем NetMulticast чтобы воспроизвести у всех
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastFireMontagePlay();
-
+	void MulticastFireMontagePlay(const FVector_NetQuantize& TargetPoint);
+	// 26,1 функция которая будет воспроизводить анимация, эффект и спавн пули
+	void LocalFire(const FVector_NetQuantize& TargetPoint);
 	// Запускается когда хп = 0 и запускает монтаж смерти
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();

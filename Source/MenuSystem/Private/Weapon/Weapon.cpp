@@ -315,7 +315,10 @@ void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 		}	
 	}
 	// функция вычитания боеприпаса и показа его в Overlay.
-	SpendAmmo();
+	if (HasAuthority())
+	{
+		SpendAmmo();
+	}
 }
 
 void AWeapon::SpendAmmo()

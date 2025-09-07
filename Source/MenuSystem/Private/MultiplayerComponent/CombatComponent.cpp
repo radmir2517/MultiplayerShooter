@@ -417,7 +417,6 @@ void UCombatComponent::FinishAutomaticFire()
 	WeaponStartFire();
 	// если обойма пуста запустим перезарядку
 	ReloadAmmoIfEmpty();
-	
 }
 
 void UCombatComponent::WeaponStartFire()
@@ -487,10 +486,11 @@ void UCombatComponent::InitializeCarriedAmmo()
 
 void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)
 {
-	if (GetWeapon() && IsFireButtonPressed)
+	if (GetWeapon() && IsFireButtonPressed && MultiplayerCharacter)
 	{
 		// запускаем серверную функцию спавна пули
 		ServerFire(TargetPoint);
+		MultiplayerCharacter->LocalFire(TargetPoint);
 	}
 }
 
@@ -500,13 +500,10 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Targ
 	//CombatComponent->BulletSpawnTransform = BulletTransform;
 	// далее проверяем что все ок и запускаем спавн пули
 	if (GetWeapon() && MultiplayerCharacter)
-	{	// спавн пули
-		GetWeapon()->OpenFire(TargetPoint);
-
+	{	
 		// запускаем NetMulticast функцию для воспроизведения на всех клиентах
-		MultiplayerCharacter->MulticastFireMontagePlay();
+		MultiplayerCharacter->MulticastFireMontagePlay(TargetPoint);
 	}
-
 }
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& InHitResult)

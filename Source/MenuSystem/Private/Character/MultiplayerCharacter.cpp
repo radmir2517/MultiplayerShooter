@@ -383,9 +383,19 @@ void AMultiplayerCharacter::ServerFireMontagePlayAndSpawnBullet_Implementation(c
 }
 */
 
-
-void AMultiplayerCharacter::MulticastFireMontagePlay_Implementation()
+void AMultiplayerCharacter::MulticastFireMontagePlay_Implementation(const FVector_NetQuantize& TargetPoint)
 {
+	if (IsLocallyControlled() && !HasAuthority()) return;
+	LocalFire(TargetPoint);
+}
+
+void AMultiplayerCharacter::LocalFire(const FVector_NetQuantize& TargetPoint)
+{
+	if (GetWeapon())
+	{
+		// спавн пули
+		GetWeapon()->OpenFire(TargetPoint);
+	}
 	// проверим что EquipWeapon и получаем AnimInstance
 	UAnimInstance* AnimInstance =  GetMesh()->GetAnimInstance();
 	if (AnimInstance)
@@ -395,7 +405,6 @@ void AMultiplayerCharacter::MulticastFireMontagePlay_Implementation()
 		AnimInstance->Montage_JumpToSection(SlotName);
 	}
 }
-
 void AMultiplayerCharacter::Elim()
 {
 	// запустим анимацию смерти
@@ -472,6 +481,8 @@ void AMultiplayerCharacter::DropOrDestroyWeapon()
 		}
 	}
 }
+
+
 
 void AMultiplayerCharacter::ElimMontagePlay()
 {

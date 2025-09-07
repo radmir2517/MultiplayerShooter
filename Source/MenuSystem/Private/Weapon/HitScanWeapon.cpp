@@ -65,8 +65,12 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 		{ // если есть звук, то воспроизвести
 			UGameplayStatics::PlaySoundAtLocation(this,HitSound,OutHit.Location);
 		}
-		// 12.1 поправим и сделаем отображение HitEffect и звука на клиенетах
-		Client_SpawnHitEffectSound(this,OutHit.Location);
+		if (HasAuthority())
+		{
+			// 12.1 поправим и сделаем отображение HitEffect и звука на клиенетах
+			Client_SpawnHitEffectSound(this,OutHit.Location);
+		}
+		
 	}
 }
 void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit)

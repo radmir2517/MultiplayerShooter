@@ -55,6 +55,7 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TargetPoint);
 
+
 	//
 	// Стрельба
 	// результат трассировки с центра экрана вперед до пересечения чего либо
@@ -155,6 +156,7 @@ protected:
 	bool bFirstFire = true;
 
 	// персонаж владеющим им
+	UPROPERTY()
 	TObjectPtr<AMultiplayerCharacter> MultiplayerCharacter;
 	// оружие которое будет назначаться и потом экипироваться
 
