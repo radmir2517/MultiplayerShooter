@@ -10,6 +10,7 @@
 AShotgun::AShotgun()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	FireType = EFireType::EFT_Shotgun;
 }
 
 void AShotgun::BeginPlay()
@@ -39,7 +40,7 @@ void AShotgun::OpenFire(const FVector_NetQuantize& TargetPoint)
 	for (int32 i = 0; i < CountOfPellets; i++)
 	{
 		FHitResult OutHit;
-		WeaponTraceHit(Start, TargetPoint, OutHit);
+		WeaponTraceHit(TargetPoint, OutHit);
 
 		if (OutHit.bBlockingHit)
 		{

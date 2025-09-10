@@ -18,12 +18,12 @@ public:
 	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	// 10.1 переопределим функцию открытия огня
 	virtual void OpenFire(const FVector_NetQuantize& TargetPoint) override;
+
 protected:
 	virtual void BeginPlay() override;
-	//13.1 функция трассировки в рандомное место в пределах сферы, аля разлет пуль/дробинок
-	FVector TraceEndWithScatters(const FVector& TraceStart, const FVector& HitTarget);
+	
 	// 14,1 функция которая будет отвечать за трассировку и разброс пуль
-	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
+	void WeaponTraceHit(const FVector& HitTarget, FHitResult& OutHit);
 
 	// 11.2 Функция спавна эффекта для клиента
 	UFUNCTION(Client, Unreliable)
@@ -42,21 +42,6 @@ protected:
 	// 11.1 Трассер для пистолета
 	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	TObjectPtr<UParticleSystem> BeamParticles;
-	
-	
-	//13.3 радиус сферы в котором будет опеределять направление трассирвоки
-	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
-	float RadiusSphereScatter = 75.f;
-	//13.4 дистанции сферы где будет раставлятся точки для направления, влияет на кучность
-	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
-	float DistanceToSphere = 800.f;
-	// 13.5 bool определяющий будет ли разлет
-	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
-	bool bUseScatters = false;
-
-	//13.6 это для дробовика, сколько будет дробинок или пуль летящих одновременно
-	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
-	int32 CountOfPellets = 1;
 
 	
 private:

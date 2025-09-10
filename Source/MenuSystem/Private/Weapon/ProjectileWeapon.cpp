@@ -26,6 +26,11 @@ FTransform AProjectileWeapon::CalculateSpawnBulletTransform(const FVector& Targe
 }
 */
 
+AProjectileWeapon::AProjectileWeapon()
+{
+	FireType = EFireType::EFT_Projectile;
+}
+
 void AProjectileWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 {
 	Super::OpenFire(TargetPoint);

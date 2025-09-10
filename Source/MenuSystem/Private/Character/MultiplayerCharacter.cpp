@@ -385,6 +385,7 @@ void AMultiplayerCharacter::ServerFireMontagePlayAndSpawnBullet_Implementation(c
 
 void AMultiplayerCharacter::MulticastFireMontagePlay_Implementation(const FVector_NetQuantize& TargetPoint)
 {
+	// если это клиент то return  т.к мы в UCombatComponent::Fire выполнили это чисто для клиента
 	if (IsLocallyControlled() && !HasAuthority()) return;
 	LocalFire(TargetPoint);
 }

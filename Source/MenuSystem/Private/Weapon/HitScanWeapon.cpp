@@ -12,6 +12,7 @@
 AHitScanWeapon::AHitScanWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	FireType = EFireType::EFT_HitScan;
 }
 
 void AHitScanWeapon::BeginPlay()
@@ -39,15 +40,11 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 	AController* InstigatorController = OwnerCharacter->GetController();
 	
 	if (!IsValid(OwnerCharacter)) return;
-	if (!GetWeaponMesh()->GetSocketByName(SocketNameOnWeapon)) return;
-	
-	const FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon);
-	//10.1 получим начальную точку для HeatScan
-	FVector Start = SocketTransform.GetLocation();
+
 	
 	FHitResult OutHit;
 	// 14.1 Сделаем общую функцию где выполняем трассировку в зависимости нужен ли разброс
-	WeaponTraceHit(Start,TargetPoint,OutHit);
+	WeaponTraceHit(TargetPoint,OutHit);
 	
 	if (OutHit.bBlockingHit)
 	{
@@ -73,12 +70,17 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 		
 	}
 }
-void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit)
+void AHitScanWeapon::WeaponTraceHit(const FVector& HitTarget, FHitResult& OutHit)
 {
 	const UObject* World = GetWorld();
-		
+
+	if (!GetWeaponMesh()->GetSocketByName(SocketNameOnWeapon)) return;
+	
+	const FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon);
+	//10.1 получим начальную точку для HeatScan
+	FVector TraceStart = SocketTransform.GetLocation();
 	//14.2 получим конечную точку, если есть разлет то отдельный просчет раслета или несли нет то сделаем ее чуть дальше чтобы трассировку для HitScan сделать
-	FVector End = bUseScatters ?  TraceEndWithScatters(TraceStart,HitTarget) : TraceStart + ((HitTarget - TraceStart) * 1.25);
+	FVector End = TraceStart + ((HitTarget - TraceStart) * 1.25);
 	
 	GetWorld()->LineTraceSingleByChannel(OutHit,TraceStart,End,ECC_Visibility);
 	if (OutHit.bBlockingHit)
@@ -124,26 +126,5 @@ void AHitScanWeapon::Client_SpawnHitEffectSound_Implementation(const UObject* Wo
 }
 
 
-FVector AHitScanWeapon::TraceEndWithScatters(const FVector& TraceStart, const FVector& HitTarget)
-{
-	// 13.1 получим вектор единичный от ствола оружие до цели трассировки
-	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
-	// 13.2 Найдем центр сферы разлета пуль или дробинок
-	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
-	// 13.3 нарисуем сферу разлета
-	DrawDebugSphere(GetWorld(),SphereCenter,RadiusSphereScatter,12,FColor::Red,false,5.f);
-	// 13.4 Возьмем рандомный в направление вектор и умножим его рандомную величину от 0 до радиуса сферы разлета
-	FVector RandomVector = UKismetMathLibrary::RandomUnitVector() * FMath::RandRange(0.f,RadiusSphereScatter);
-	// 13.5 прибавим рандом и центр сферы 
-	FVector ScatterVector = SphereCenter + RandomVector;
-	// 13.7 направление от начало ствола до разлетного вектора
-	FVector ToScatterVector = ScatterVector - TraceStart;
-	
-	// 13.7 нарисуем сферу в месте прибавление рандома
-	DrawDebugSphere(GetWorld(),SphereCenter + RandomVector,8.f,12,FColor::Orange,false,5.f);
-	//и далее чтобы он был длиннее для трассировки умножим TRACE_LENGHT, но чтобы числа не большие были поделим на длину начального вектора
-	DrawDebugLine(GetWorld(),TraceStart,TraceStart + ToScatterVector * TRACE_LENGHT/ToScatterVector.Size(),FColor::Cyan,false, 5.f);
-	
-	return FVector(TraceStart + ToScatterVector * TRACE_LENGHT / ToScatterVector.Size());
-}
+
 

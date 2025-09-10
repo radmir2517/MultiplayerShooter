@@ -16,6 +16,7 @@ class MENUSYSTEM_API AProjectileWeapon : public AWeapon
 	GENERATED_BODY()
 	
 public:
+	AProjectileWeapon();
 	// функция расчета местоположения спавна пули , не используется, перенесен в OpenFire
 	//virtual FTransform CalculateSpawnBulletTransform(const FVector& TargetPoint);
 	// функция спавна пули

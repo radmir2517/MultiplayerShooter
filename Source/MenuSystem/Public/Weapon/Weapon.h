@@ -26,6 +26,15 @@ enum class EWeaponState : uint8
 
 	EWC_MAX UMETA(DisplayName = "DefaultMAX")
 };
+
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+	EFT_Projectile UMETA(DisplayName = "Projectile"),
+	EFT_HitScan UMETA(DisplayName = "HitScan"),
+	EFT_Shotgun UMETA(DisplayName = "Shotgun"),
+	EFT_MAX UMETA(DisplayName = "DefaultMAX")
+};
 UCLASS()
 class MENUSYSTEM_API AWeapon : public AActor
 {
@@ -57,6 +66,7 @@ public:
 	FORCEINLINE EWeaponType GetWeaponType() const {return WeaponType;}
 	FORCEINLINE USoundBase* GetPickUpSound() const {return PickUpSound;}
 	FORCEINLINE bool IsStandartWeapon() const {return  bIsStandardWeapon;}
+	FORCEINLINE EFireType GetFireType() const {return FireType;}
 	void SetCurrentAmmo(const int32 Ammo) {WeaponAmmo = Ammo;}
 	//31. задания булевой что это стандартное оружие
 	void SetbStandardWeapon(bool bStandardWeapon);
@@ -79,6 +89,25 @@ public:
 	void PlayFireEffect();
 	UFUNCTION(BLueprintCallable, NetMulticast, Unreliable)
 	void StopFireEffect();
+	
+	//
+	// Разброс
+	// 26.1 переместим функции разброса в базовое оружие
+	//13.1 функция трассировки в рандомное место в пределах сферы, аля разлет пуль/дробинок
+	//13.3 радиус сферы в котором будет опеределять направление трассирвоки
+	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
+	float RadiusSphereScatter = 75.f;
+	//13.4 дистанции сферы где будет раставлятся точки для направления, влияет на кучность
+	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
+	float DistanceToSphere = 800.f;
+
+	//13.6 это для дробовика, сколько будет дробинок или пуль летящих одновременно
+	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
+	int32 CountOfPellets = 1;
+	
+	FVector TraceEndWithScatters(const FVector& HitTarget);
+
+	FORCEINLINE bool GetbUseScatters() const {return bUseScatters;}
 	
 protected:
 	virtual void BeginPlay() override;
@@ -128,6 +157,9 @@ protected:
 	// состояние оружия по умолчанию у него будет EWC_Initial
 	UPROPERTY(ReplicatedUsing=OnRep_WeaponState,VisibleAnywhere, Category="Weapon Properties")
 	EWeaponState WeaponState;
+
+	UPROPERTY()
+	EFireType FireType;
 
 	// компонент который будет создан во время выполнения эффекта
 	TObjectPtr<UNiagaraComponent> FireEffect;
@@ -200,8 +232,29 @@ protected:
 
 	//31.6 bool для обозначения выдается ли оружие при спавне игрока или нет
 	bool bIsStandardWeapon = false;
+	//
+	// Разброс
+	// 13.5 bool определяющий будет ли разлет
+	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
+	bool bUseScatters = false;
 	
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

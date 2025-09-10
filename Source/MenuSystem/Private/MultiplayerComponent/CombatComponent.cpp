@@ -486,11 +486,25 @@ void UCombatComponent::InitializeCarriedAmmo()
 
 void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint)
 {
+	FVector_NetQuantize HitTarget;
 	if (GetWeapon() && IsFireButtonPressed && MultiplayerCharacter)
 	{
+		switch (GetWeapon()->GetFireType())
+		{
+			case EFireType::EFT_Projectile:
+			
+			break;
+		case EFireType::EFT_HitScan:
+			HitTarget = GetWeapon()->GetbUseScatters() ? GetWeapon()->TraceEndWithScatters(TargetPoint) : HitTarget = TargetPoint;
+			break;
+		case EFireType::EFT_Shotgun:
+			
+			break;
+		}
 		// запускаем серверную функцию спавна пули
-		ServerFire(TargetPoint);
-		MultiplayerCharacter->LocalFire(TargetPoint);
+		ServerFire(HitTarget);
+		// запускаем локальную стрельбу которая лишь для эффекта на клиенте
+		MultiplayerCharacter->LocalFire(HitTarget);
 	}
 }
 
