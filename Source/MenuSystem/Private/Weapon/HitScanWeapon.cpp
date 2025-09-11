@@ -79,7 +79,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& HitTarget, FHitResult& OutHit
 	const FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon);
 	//10.1 получим начальную точку для HeatScan
 	FVector TraceStart = SocketTransform.GetLocation();
-	//14.2 получим конечную точку, если есть разлет то отдельный просчет раслета или несли нет то сделаем ее чуть дальше чтобы трассировку для HitScan сделать
+	//14.2 получим конечную точку,  сделаем ее чуть дальше чтобы трассировку для HitScan сделать
 	FVector End = TraceStart + ((HitTarget - TraceStart) * 1.25);
 	
 	GetWorld()->LineTraceSingleByChannel(OutHit,TraceStart,End,ECC_Visibility);

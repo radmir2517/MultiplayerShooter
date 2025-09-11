@@ -492,13 +492,14 @@ void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize&
 		switch (GetWeapon()->GetFireType())
 		{
 			case EFireType::EFT_Projectile:
-			
+			HitTarget = GetWeapon()->GetbUseScatters() ? GetWeapon()->TraceEndWithScatters(TargetPoint) : HitTarget = TargetPoint;
 			break;
 		case EFireType::EFT_HitScan:
 			HitTarget = GetWeapon()->GetbUseScatters() ? GetWeapon()->TraceEndWithScatters(TargetPoint) : HitTarget = TargetPoint;
 			break;
 		case EFireType::EFT_Shotgun:
-			
+			TArray<FVector_NetQuantize>HitTargets;
+			GetWeapon()->TraceEndWithScattersForShotgun(TargetPoint, HitTargets);
 			break;
 		}
 		// запускаем серверную функцию спавна пули

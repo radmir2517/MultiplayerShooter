@@ -22,7 +22,7 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionObjectType(ECC_WorldDynamic);
 	
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;
+	bReplicates = false;
 }
 
 void AProjectile::BeginPlay()

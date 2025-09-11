@@ -302,7 +302,7 @@ void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 {
 	if (CasingClass)
 	{
-		UWorld* World =  GetWorld();
+		UWorld* World = GetWorld();
 		FTransform SocketCasingTransform = GetWeaponMesh()->GetSocketTransform(SocketNameForCasing,RTS_World);
 		
 		//FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon,RTS_World);
@@ -397,6 +397,37 @@ FVector AWeapon::TraceEndWithScatters(const FVector& HitTarget)
 	return FVector(TraceStart + ToScatterVector * TRACE_LENGHT / ToScatterVector.Size());
 }
 
+void AWeapon::TraceEndWithScattersForShotgun(const FVector& HitTarget, TArray<FVector_NetQuantize>& ShotgunHits)
+{
+	if (!GetWeaponMesh()->GetSocketByName(SocketNameOnWeapon)) return;
+	
+	const FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon);
+	//10.1 получим начальную точку для HeatScan
+	FVector TraceStart = SocketTransform.GetLocation();
+	// 13.1 получим вектор единичный от ствола оружие до цели трассировки
+	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	// 13.2 Найдем центр сферы разлета пуль или дробинок
+	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+	// 13.3 нарисуем сферу разлета
+	DrawDebugSphere(GetWorld(),SphereCenter,RadiusSphereScatter,12,FColor::Red,false,5.f);
+	for (int i = 0; i < CountOfPellets; i++)
+	{
+		// 13.4 Возьмем рандомный в направление вектор и умножим его рандомную величину от 0 до радиуса сферы разлета
+		FVector RandomVector = UKismetMathLibrary::RandomUnitVector() * FMath::RandRange(0.f,RadiusSphereScatter);
+		// 13.5 прибавим рандом и центр сферы 
+		FVector ScatterVector = SphereCenter + RandomVector;
+		// 13.7 направление от начало ствола до разлетного вектора
+		FVector ToScatterVector = ScatterVector - TraceStart;
+	
+		// 13.7 нарисуем сферу в месте прибавление рандома
+		DrawDebugSphere(GetWorld(),SphereCenter + RandomVector,8.f,12,FColor::Orange,false,5.f);
+		//и далее чтобы он был длиннее для трассировки умножим TRACE_LENGHT, но чтобы числа не большие были поделим на длину начального вектора
+		DrawDebugLine(GetWorld(),TraceStart,TraceStart + ToScatterVector * TRACE_LENGHT/ToScatterVector.Size(),FColor::Cyan,false, 5.f);
+	
+		ShotgunHits.Add(TraceStart + ToScatterVector * TRACE_LENGHT / ToScatterVector.Size());
+	}
+	
+}
 
 
 

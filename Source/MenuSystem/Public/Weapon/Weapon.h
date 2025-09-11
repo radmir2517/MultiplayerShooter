@@ -106,7 +106,7 @@ public:
 	int32 CountOfPellets = 1;
 	
 	FVector TraceEndWithScatters(const FVector& HitTarget);
-
+	void TraceEndWithScattersForShotgun(const FVector& HitTarget, TArray<FVector_NetQuantize>& ShotgunHits);
 	FORCEINLINE bool GetbUseScatters() const {return bUseScatters;}
 	
 protected:
