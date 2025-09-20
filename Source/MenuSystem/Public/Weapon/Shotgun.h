@@ -14,9 +14,10 @@ class MENUSYSTEM_API AShotgun : public AHitScanWeapon
 public:
 	AShotgun();
 
+	virtual void OpenShotgunFire(const TArray<FVector_NetQuantize>& TargetPoints, const FVector_NetQuantize Start);
 protected:
 	virtual void BeginPlay() override;
-	virtual void OpenFire(const FVector_NetQuantize& TargetPoint) override;
+	//virtual void OpenFire(const FVector_NetQuantize& TargetPoint) override;
 
 	
 public:

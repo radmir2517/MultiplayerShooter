@@ -9,6 +9,8 @@
 #include "MultiplayerCharacter.generated.h"
 
 
+class ULagCompensationComponent;
+class UBoxComponent;
 class AMultiplayerHUD;
 class UCharacterOverlay;
 class UBuffComponent;
@@ -33,6 +35,7 @@ public:
 	AMultiplayerCharacter();
 
 	void PostInitializeComponents() override;
+	
 	void RotateInPlace(float DeltaTime);
 
 	virtual void Tick(float DeltaTime) override;
@@ -68,8 +71,12 @@ public:
 	// введем серверную функцию чтобы, воспроизводить анимацию, а потом через него сделаем NetMulticast чтобы воспроизвести у всех
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFireMontagePlay(const FVector_NetQuantize& TargetPoint);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastShotgunFireMontagePlay(const TArray<FVector_NetQuantize>& TargetPoints, const FVector_NetQuantize Start);
 	// 26,1 функция которая будет воспроизводить анимация, эффект и спавн пули
 	void LocalFire(const FVector_NetQuantize& TargetPoint);
+
+	void ShotgunLocalFire(const TArray<FVector_NetQuantize>& TargetPoints, FVector_NetQuantize Start);
 	// Запускается когда хп = 0 и запускает монтаж смерти
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
@@ -143,6 +150,67 @@ public:
 	FName LeftHandSocketName = "LeftHandSocket";
 	UPROPERTY(EditDefaultsOnly)
 	FName BackpackSocketName = "BackpackSocket";
+
+	//
+	// HitBoxes
+	//
+	// 27.0 карта где будят хранится все эти коробки
+	UPROPERTY()
+	TMap<FName, UBoxComponent*> HitCollisionBoxes;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> head;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> pelvis;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> spine_02;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> spine_03;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> upperarm_l;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> upperarm_r;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> lowerarm_l;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> lowerarm_r;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> hand_l;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> hand_r;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> backpack;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> blanket;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> thigh_l;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> thigh_r;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> calf_l;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> calf_r;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> foot_l;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> foot_r;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -201,7 +269,10 @@ protected:
 	// 22,3 сделаем указатель на компонент
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UBuffComponent> BuffComponent;
-
+	// 26.5 создадим компонент LagCompenstation
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<ULagCompensationComponent> LagCompensationComponent;
+	
 	UPROPERTY(ReplicatedUsing=OnRep_OverlappingWeapon);
 	TObjectPtr<AWeapon> OverlappingWeapon;
 

@@ -54,6 +54,8 @@ public:
 	void Fire(bool IsFireButtonPressed, const FVector_NetQuantize& TargetPoint);
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TargetPoint);
+	UFUNCTION(Server, Reliable)
+	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TargetPoints, const FVector_NetQuantize Start);
 
 
 	//
@@ -74,7 +76,9 @@ public:
 	// состояние персонажа. Перезаряжающий, незадействованный
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECT_Unoccupied;
-
+	// локальная переменная для начала перезарядки
+	bool bIsLocallyReloading = false;
+	
 	void Reload();
 	UFUNCTION(Server, Reliable)
 	void Server_Reload();
@@ -165,8 +169,13 @@ protected:
 	
 	UPROPERTY(ReplicatedUsing=OnRep_SecondaryEquipWeapon, BlueprintReadOnly)
 	TObjectPtr<AWeapon> SecondaryEquipWeapon;
-	UPROPERTY(Replicated)
+	
+	UPROPERTY(ReplicatedUsing="OnRep_bIsAiming")
 	bool bIsAiming;
+	UFUNCTION()
+	void OnRep_bIsAiming();
+
+	bool bAimLocallyButtonPressed = false;
 
 	UPROPERTY(EditDefaultsOnly)
 	float BaseWalkSpeed = 500.f;
@@ -260,6 +269,7 @@ protected:
 	
 private:
 	bool bIsStartingReloading = false;
+
 
 	// 20.1 функции созданные для EquipWeapon для сокращения написания кода в EquipWeapon
 	void DropWeapon();

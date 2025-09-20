@@ -357,12 +357,17 @@ void UCombatComponent::SetIsAiming(bool bInAim)
 	if (MultiplayerCharacter)
 	{
 		MultiplayerCharacter->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+		if (MultiplayerCharacter->IsLocallyControlled())
+		{
+			bAimLocallyButtonPressed = bIsAiming;
+		}
 	}
 	// 16.1 при нажатии на прицел мы включим функцию добавление виджета и воспроизведение анимации виджета прицела
 	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled() && GetWeapon() && GetWeapon()->GetWeaponType() == EWeaponType::EWT_SniperRifle)
 	{
 		MultiplayerCharacter->ShowSniperScopeWidget(bIsAiming);
 	}
+	
 }
 
 void UCombatComponent::FireButtonPressed(bool IsPressed)
@@ -434,6 +439,14 @@ void UCombatComponent::WeaponStartFire()
 	}
 }
 
+void UCombatComponent::OnRep_bIsAiming()
+{
+	if (MultiplayerCharacter && MultiplayerCharacter->IsLocallyControlled())
+	{
+		bIsAiming = bAimLocallyButtonPressed;
+	}
+}
+
 bool UCombatComponent::CanFire()
 {
 	if (GetWeapon() && !GetWeapon()->IsEmpty() && bCanFire)
@@ -500,12 +513,15 @@ void UCombatComponent::Fire(bool IsFireButtonPressed, const FVector_NetQuantize&
 		case EFireType::EFT_Shotgun:
 			TArray<FVector_NetQuantize>HitTargets;
 			GetWeapon()->TraceEndWithScattersForShotgun(TargetPoint, HitTargets);
-			break;
+			const FVector_NetQuantize Socketlocation = GetWeapon()->GetWeaponMesh()->GetSocketLocation(GetWeapon()->SocketNameOnWeapon);
+			ServerShotgunFire(HitTargets,Socketlocation);
+			if (MultiplayerCharacter->IsLocallyControlled())  MultiplayerCharacter->ShotgunLocalFire(HitTargets, Socketlocation);
+			return;
 		}
 		// запускаем серверную функцию спавна пули
 		ServerFire(HitTarget);
 		// запускаем локальную стрельбу которая лишь для эффекта на клиенте
-		MultiplayerCharacter->LocalFire(HitTarget);
+		if (MultiplayerCharacter->IsLocallyControlled()) MultiplayerCharacter->LocalFire(HitTarget);
 	}
 }
 
@@ -518,6 +534,18 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Targ
 	{	
 		// запускаем NetMulticast функцию для воспроизведения на всех клиентах
 		MultiplayerCharacter->MulticastFireMontagePlay(TargetPoint);
+	}
+}
+
+void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TargetPoints, const FVector_NetQuantize Start)
+{
+	// обновляем вращение и локацию для спавна пули
+	//CombatComponent->BulletSpawnTransform = BulletTransform;
+	// далее проверяем что все ок и запускаем спавн пули
+	if (GetWeapon() && MultiplayerCharacter)
+	{	
+		// запускаем NetMulticast функцию для воспроизведения на всех клиентах
+		MultiplayerCharacter->MulticastShotgunFireMontagePlay(TargetPoints, Start);
 	}
 }
 
@@ -577,6 +605,12 @@ void UCombatComponent::Reload()
 	if ( GetWeapon() && CarriedAmmo > 0 && CombatState != ECombatState::ECT_Reloading && !GetWeapon()->IsFullAmmo() )
 	{
 		Server_Reload();
+		// сделаем у клиента сразу перезарядку, чтобы пинг не влиял
+		if (MultiplayerCharacter->IsLocallyControlled())
+		{
+			bIsLocallyReloading = true;
+			HandleReload();
+		}
 	}
 }
 
@@ -586,7 +620,7 @@ void UCombatComponent::Server_Reload_Implementation()
 	// запустим функцию, которая запустит анимацию воспроизведения
 	CombatState = ECombatState::ECT_Reloading;
 	// запустим анимацию у сервера
-	HandleReload();
+	if (!MultiplayerCharacter->IsLocallyControlled()) HandleReload();
 }
 
 void UCombatComponent::HandleReload()
@@ -637,7 +671,8 @@ void UCombatComponent::OnRep_CombatState()
 	switch (CombatState)
 	{
 		case ECombatState::ECT_Reloading:
-		HandleReload();
+		// у клиентов но не управляемого сделаем перезарядку, у владельца уже была перезарядка
+		if (!MultiplayerCharacter->IsLocallyControlled()) HandleReload();
 		break;
 		
 		case ECombatState::ECT_Unoccupied:
@@ -656,6 +691,7 @@ void UCombatComponent::OnRep_CombatState()
 void UCombatComponent::FinishReloading()
 {
 	if (!IsValid(MultiplayerCharacter)) return;
+	bIsLocallyReloading = false;
 	// через сервер переключим статус 
 	if (MultiplayerCharacter->HasAuthority())
 	{	

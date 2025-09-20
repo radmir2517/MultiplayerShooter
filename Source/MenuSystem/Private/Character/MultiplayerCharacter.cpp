@@ -4,6 +4,7 @@
 #include "Character/MultiplayerCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -14,10 +15,12 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "MultiplayerComponent/BuffComponent.h"
 #include "MultiplayerComponent/CombatComponent.h"
+#include "MultiplayerComponent/LagCompensationComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Player/MultiplayerPlayerController.h"
 #include "Player/MultiplayerPlayerState.h"
+#include "Weapon/Shotgun.h"
 #include "Weapon/Weapon.h"
 
 
@@ -41,6 +44,8 @@ AMultiplayerCharacter::AMultiplayerCharacter()
 
 	BuffComponent = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
 	BuffComponent->SetIsReplicated(true);
+	//26.6 Создадим компонент lagCompensation
+	LagCompensationComponent = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("LagCompensationComponent"));
 
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
@@ -62,6 +67,98 @@ AMultiplayerCharacter::AMultiplayerCharacter()
 	SetMinNetUpdateFrequency(33.f);
 	SetNetUpdateFrequency(66.f);
 	bReplicates = true;
+
+	// hitboxes
+
+	head = CreateDefaultSubobject<UBoxComponent>("head");
+	head->SetupAttachment(GetMesh(),"head");
+	head->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("head", head);
+
+	pelvis = CreateDefaultSubobject<UBoxComponent>("pelvis");
+	pelvis->SetupAttachment(GetMesh(),"pelvis");
+	pelvis->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("pelvis", pelvis);
+
+	spine_02 = CreateDefaultSubobject<UBoxComponent>("spine_02");
+	spine_02->SetupAttachment(GetMesh(),"spine_02");
+	spine_02->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("spine_02", spine_02);
+	
+	spine_03 = CreateDefaultSubobject<UBoxComponent>("spine_03");
+	spine_03->SetupAttachment(GetMesh(),"spine_03");
+	spine_03->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("spine_03", spine_03);
+	
+	upperarm_r = CreateDefaultSubobject<UBoxComponent>("upperarm_r");
+	upperarm_r->SetupAttachment(GetMesh(),"upperarm_r");
+	upperarm_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("upperarm_r", upperarm_r);
+	
+	upperarm_l = CreateDefaultSubobject<UBoxComponent>("upperarm_l");
+	upperarm_l->SetupAttachment(GetMesh(),"upperarm_l");
+	upperarm_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("upperarm_l", upperarm_l);
+	
+	lowerarm_l = CreateDefaultSubobject<UBoxComponent>("lowerarm_l");
+	lowerarm_l->SetupAttachment(GetMesh(),"lowerarm_l");
+	lowerarm_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("lowerarm_l", lowerarm_l);
+	
+	lowerarm_r = CreateDefaultSubobject<UBoxComponent>("lowerarm_r");
+	lowerarm_r->SetupAttachment(GetMesh(),"lowerarm_r");
+	lowerarm_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("lowerarm_r", lowerarm_r);
+	
+	hand_l = CreateDefaultSubobject<UBoxComponent>("hand_l");
+	hand_l->SetupAttachment(GetMesh(),"hand_l");
+	hand_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("hand_l", hand_l);
+	
+	hand_r = CreateDefaultSubobject<UBoxComponent>("hand_r");
+	hand_r->SetupAttachment(GetMesh(),"hand_r");
+	hand_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("hand_r", hand_r);
+	
+	backpack = CreateDefaultSubobject<UBoxComponent>("backpack");
+	backpack->SetupAttachment(GetMesh(),"backpack");
+	backpack->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("backpack", backpack);
+	
+	blanket = CreateDefaultSubobject<UBoxComponent>("blanket");
+	blanket->SetupAttachment(GetMesh(),"backpack");
+	blanket->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("blanket", blanket);
+	
+	thigh_l = CreateDefaultSubobject<UBoxComponent>("thigh_l");
+	thigh_l->SetupAttachment(GetMesh(),"thigh_l");
+	thigh_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("thigh_l", thigh_l);
+	
+	thigh_r = CreateDefaultSubobject<UBoxComponent>("thigh_r");
+	thigh_r->SetupAttachment(GetMesh(),"thigh_r");
+	thigh_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("thigh_r", thigh_r);
+	
+	calf_l = CreateDefaultSubobject<UBoxComponent>("calf_l");
+	calf_l->SetupAttachment(GetMesh(),"calf_l");
+	calf_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("calf_l", calf_l);
+	
+	calf_r = CreateDefaultSubobject<UBoxComponent>("calf_r");
+	calf_r->SetupAttachment(GetMesh(),"calf_r");
+	calf_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("calf_r", calf_r);
+	
+	foot_l = CreateDefaultSubobject<UBoxComponent>("foot_l");
+	foot_l->SetupAttachment(GetMesh(),"foot_l");
+	foot_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("foot_l", foot_l);
+	
+	foot_r = CreateDefaultSubobject<UBoxComponent>("foot_r");
+	foot_r->SetupAttachment(GetMesh(),"foot_r");
+	foot_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HitCollisionBoxes.Add("foot_r", foot_r);
 }
 
 void AMultiplayerCharacter::PostInitializeComponents()
@@ -79,6 +176,23 @@ void AMultiplayerCharacter::PostInitializeComponents()
 		BuffComponent->SetInitialBaseSpeed(GetCharacterMovement()->MaxWalkSpeed,GetCharacterMovement()->MaxWalkSpeedCrouched);
 		//26. Установим стандартную скорость прыжка
 		BuffComponent->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
+	}
+	//26.7  если валидно мы зададим персонажа и контрлллера туда
+	if (LagCompensationComponent)
+	{
+		LagCompensationComponent->SetMultiplayerCharacter(this);
+		if (MultiplayerPlayerController)
+		{
+			LagCompensationComponent->SetMultiplayerPlayerController(MultiplayerPlayerController);
+		}
+		else
+		{
+			MultiplayerPlayerController = MultiplayerPlayerController == nullptr ?  Cast<AMultiplayerPlayerController>(Controller) : MultiplayerPlayerController;
+			if (MultiplayerPlayerController)
+			{
+				LagCompensationComponent->SetMultiplayerPlayerController(MultiplayerPlayerController);
+			}
+		}
 	}
 }
 
@@ -186,7 +300,10 @@ void AMultiplayerCharacter::BeginPlay()
 		FInputModeGameOnly ModeUI;
 		PlayerController->SetInputMode(ModeUI);
 	}
-	
+	// 27.6 создадим пустой FramePackage и заполним его карту boxcomponents и потов визуализируем их
+	FFramePackage FramePackage;
+	LagCompensationComponent->SafeFramePackage(FramePackage);
+	LagCompensationComponent->ShowFramePackage(FramePackage,FColor::Orange);
 }
 
 UCombatComponent* AMultiplayerCharacter::GetCombatComponent()
@@ -390,22 +507,55 @@ void AMultiplayerCharacter::MulticastFireMontagePlay_Implementation(const FVecto
 	LocalFire(TargetPoint);
 }
 
+
+void AMultiplayerCharacter::MulticastShotgunFireMontagePlay_Implementation(
+	const TArray<FVector_NetQuantize>& TargetPoints, const FVector_NetQuantize Start)
+{
+	// если это клиент то return  т.к мы в UCombatComponent::Fire выполнили это чисто для клиента
+	if (IsLocallyControlled() && !HasAuthority()) return;
+	ShotgunLocalFire(TargetPoints, Start);
+}
+
 void AMultiplayerCharacter::LocalFire(const FVector_NetQuantize& TargetPoint)
 {
-	if (GetWeapon())
+	if (!CombatComponent && !GetWeapon()) return;
+	if (CombatComponent->CombatState == ECombatState::ECT_Reloading) return;
+	if (CombatComponent->CombatState == ECombatState::ECT_Unoccupied)
 	{
 		// спавн пули
 		GetWeapon()->OpenFire(TargetPoint);
-	}
-	// проверим что EquipWeapon и получаем AnimInstance
-	UAnimInstance* AnimInstance =  GetMesh()->GetAnimInstance();
-	if (AnimInstance)
-	{	// запускаем монтаж и в зависимости прицеливаемся мы или нет мы переходим к слоту
-		AnimInstance->Montage_Play(FireMontage,1.f);
-		FName SlotName  = CombatComponent->GetIsAiming() ? "RiffleAim" : "RiffleHip";
-		AnimInstance->Montage_JumpToSection(SlotName);
+		// проверим что EquipWeapon и получаем AnimInstance
+		UAnimInstance* AnimInstance =  GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{	// запускаем монтаж и в зависимости прицеливаемся мы или нет мы переходим к слоту
+			AnimInstance->Montage_Play(FireMontage,1.f);
+			FName SlotName  = CombatComponent->GetIsAiming() ? "RiffleAim" : "RiffleHip";
+			AnimInstance->Montage_JumpToSection(SlotName);
+		}
 	}
 }
+
+void AMultiplayerCharacter::ShotgunLocalFire(const TArray<FVector_NetQuantize>& TargetPoints,const FVector_NetQuantize Start)
+{
+	if (!CombatComponent) return;
+	if (CombatComponent->CombatState == ECombatState::ECT_Reloading || CombatComponent->CombatState ==ECombatState::ECT_Unoccupied )
+	{
+		if (GetWeapon())
+		{
+			AShotgun* Shotgun = Cast<AShotgun>(GetWeapon());
+			Shotgun->OpenShotgunFire(TargetPoints, Start);
+			// проверим что EquipWeapon и получаем AnimInstance
+			UAnimInstance* AnimInstance =  GetMesh()->GetAnimInstance();
+			if (AnimInstance)
+			{	// запускаем монтаж и в зависимости прицеливаемся мы или нет мы переходим к слоту
+				AnimInstance->Montage_Play(FireMontage,1.f);
+				FName SlotName  = CombatComponent->GetIsAiming() ? "RiffleAim" : "RiffleHip";
+				AnimInstance->Montage_JumpToSection(SlotName);
+			}
+		}
+	}
+}
+
 void AMultiplayerCharacter::Elim()
 {
 	// запустим анимацию смерти

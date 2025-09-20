@@ -121,7 +121,16 @@ void UMultiplayerAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bRotateRootBone = MultiplayerCharacter->ShouldRotateRootBone();
 	bIsCharacterEliminated = MultiplayerCharacter->IsCharacterEliminated();
 	// для отключения Fabroc при перезардке
-	bIsReloading = MultiplayerCharacter->GetCombatComponent()->CombatState == ECombatState::ECT_Reloading;
+	if (MultiplayerCharacter->IsLocallyControlled())
+	{
+		bIsReloading = MultiplayerCharacter->GetCombatComponent()->bIsLocallyReloading;
+	}
+	else
+	{
+		bIsReloading = MultiplayerCharacter->GetCombatComponent()->CombatState == ECombatState::ECT_Reloading;
+	}
+	
+	
 	bDisableGameplay = MultiplayerCharacter->IsDisabledGameplay();
 	bTransformRightHand = MultiplayerCharacter->GetCombatComponent()->GetCombatState() == ECombatState::ECT_Unoccupied && !MultiplayerCharacter->IsDisabledGameplay();
 }

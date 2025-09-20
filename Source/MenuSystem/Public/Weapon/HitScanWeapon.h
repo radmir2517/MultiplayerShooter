@@ -23,7 +23,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 	// 14,1 функция которая будет отвечать за трассировку и разброс пуль
-	void WeaponTraceHit(const FVector& HitTarget, FHitResult& OutHit);
+	void WeaponTraceHit(const FVector& HitTarget, FHitResult& OutHit, const FVector_NetQuantize& TraceStart);
 
 	// 11.2 Функция спавна эффекта для клиента
 	UFUNCTION(Client, Unreliable)

@@ -75,7 +75,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon,WeaponState);
-	DOREPLIFETIME(AWeapon,WeaponAmmo);
+	//DOREPLIFETIME(AWeapon,WeaponAmmo);
 }
 
 
@@ -316,19 +316,82 @@ void AWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 		}	
 	}
 	// функция вычитания боеприпаса и показа его в Overlay.
-	if (HasAuthority())
-	{
-		SpendAmmo();
-	}
+	SpendAmmo();
+	
 }
 
 void AWeapon::SpendAmmo()
 {
+	SumAddChange -= 1;
 	// уменьшим кол-во патронов 
 	WeaponAmmo = FMath::Clamp(WeaponAmmo - 1, 0, MaxWeaponAmmo);
 	// обновим Overlay
 	SetHUDAmmo();
+	if (HasAuthority())
+	{
+		ClientSpendAmmo(WeaponAmmo);
+	}
+	else
+	{
+		++SumSpendChange;
+	}
 }
+
+void AWeapon::ClientSpendAmmo_Implementation(int32 ServerAmmo)
+{
+	if (HasAuthority()) return;
+	WeaponAmmo = ServerAmmo;
+	--SumSpendChange;
+	WeaponAmmo -= SumSpendChange;
+	SetHUDAmmo();
+}
+
+void AWeapon::SetCurrentAmmo(const int32 Ammo)
+{	
+	// уменьшим кол-во патронов 
+	WeaponAmmo = FMath::Clamp(WeaponAmmo = Ammo, 0, MaxWeaponAmmo);
+	// обновим Overlay
+	SetHUDAmmo();
+	if (HasAuthority())
+	{
+		ClientSetAmmo(WeaponAmmo);
+	}
+}
+
+void AWeapon::ClientSetAmmo_Implementation(int32 ServerAmmo)
+{
+	if (HasAuthority()) return;
+	// уменьшим кол-во патронов 
+	WeaponAmmo = FMath::Clamp(WeaponAmmo = ServerAmmo, 0, MaxWeaponAmmo);
+	
+	// обновим Overlay
+	SetHUDAmmo();
+}
+
+void AWeapon::ClientAddAmmo_Implementation(int32 ServerAmmo, int32 ChangeAmount)
+{
+	// НЕРАБОТАЕТ И НЕ ИСпользуется
+	if (HasAuthority()) return;
+	//WeaponAmmo += InAmmo;
+	
+	SumAddChange = SumAddChange - (ServerAmmo - WeaponAmmo);
+	WeaponAmmo = ServerAmmo;
+	WeaponAmmo -= SumAddChange;
+	/*
+	if (InAmmo > 0)
+	{
+		SumChange -= InAmmo;
+		WeaponAmmo -= SumChange;
+	}
+	else
+	{
+		SumChange += InAmmo;
+		WeaponAmmo += SumChange;
+	}*/
+	SetHUDAmmo();
+}
+
+
 
 void AWeapon::SetHUDAmmo()
 {
@@ -344,6 +407,8 @@ void AWeapon::SetHUDAmmo()
 		}
 	}
 }
+
+
 
 bool AWeapon::IsEmpty()
 {

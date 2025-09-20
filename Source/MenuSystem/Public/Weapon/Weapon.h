@@ -67,7 +67,7 @@ public:
 	FORCEINLINE USoundBase* GetPickUpSound() const {return PickUpSound;}
 	FORCEINLINE bool IsStandartWeapon() const {return  bIsStandardWeapon;}
 	FORCEINLINE EFireType GetFireType() const {return FireType;}
-	void SetCurrentAmmo(const int32 Ammo) {WeaponAmmo = Ammo;}
+	void SetCurrentAmmo(const int32 Ammo);
 	//31. задания булевой что это стандартное оружие
 	void SetbStandardWeapon(bool bStandardWeapon);
 	
@@ -104,6 +104,9 @@ public:
 	//13.6 это для дробовика, сколько будет дробинок или пуль летящих одновременно
 	UPROPERTY(EditDefaultsOnly, Category="Scatter Properties")
 	int32 CountOfPellets = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon")
+	FName SocketNameOnWeapon = "FireSocket";
 	
 	FVector TraceEndWithScatters(const FVector& HitTarget);
 	void TraceEndWithScattersForShotgun(const FVector& HitTarget, TArray<FVector_NetQuantize>& ShotgunHits);
@@ -149,8 +152,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TSubclassOf<ACasing> CasingClass;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon")
-	FName SocketNameOnWeapon = "FireSocket";
+	
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	FName SocketNameForCasing = "AmmoEject";
 	
@@ -198,7 +200,7 @@ protected:
 	/*
 	 * WeaponAmmo
 	 */
-	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_WeaponAmmo, Category="Weapon Properties")
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	int32 WeaponAmmo = 30;
 	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	int32 MaxWeaponAmmo = 30;
@@ -206,7 +208,10 @@ protected:
 	AMultiplayerCharacter* MultiplayerCharacter;
 	UPROPERTY()
 	AMultiplayerPlayerController* MultiplayerPlayerController;
-	
+
+	int32 SumAddChange = 0;
+	int32 SumSetChange = 0;
+	int32 SumSpendChange = 0;
 	// функция репликации боеприпаса и отправления значения на экран у клиента
 	UFUNCTION()
 	void OnRep_WeaponAmmo();
@@ -216,7 +221,15 @@ protected:
 	// побочная функция где мы получаем указатели на персонаж и контроллер и обновления знач на экране
 	UFUNCTION()
 	void SetHUDAmmo();
+
+	UFUNCTION(Client,Reliable)
+	void ClientAddAmmo(int32 ServerAmmo, int32 ChangeAmount);
+	UFUNCTION(Client,Reliable)
+	void ClientSetAmmo(int32 ServerAmmo);
+	UFUNCTION(Client,Reliable)
+	void ClientSpendAmmo(int32 ServerAmmo);
 	
+
 	/*
 	 *	CarriedAmmo
 	 */

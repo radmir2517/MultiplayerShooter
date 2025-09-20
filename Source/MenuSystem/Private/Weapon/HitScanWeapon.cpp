@@ -41,10 +41,13 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 	
 	if (!IsValid(OwnerCharacter)) return;
 
+	const FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon);
+	//10.1 получим начальную точку для HeatScan
+	FVector TraceStart = SocketTransform.GetLocation();
 	
 	FHitResult OutHit;
 	// 14.1 Сделаем общую функцию где выполняем трассировку в зависимости нужен ли разброс
-	WeaponTraceHit(TargetPoint,OutHit);
+	WeaponTraceHit(TargetPoint,OutHit,TraceStart);
 	
 	if (OutHit.bBlockingHit)
 	{
@@ -70,15 +73,15 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 		
 	}
 }
-void AHitScanWeapon::WeaponTraceHit(const FVector& HitTarget, FHitResult& OutHit)
+void AHitScanWeapon::WeaponTraceHit(const FVector& HitTarget, FHitResult& OutHit, const FVector_NetQuantize& TraceStart)
 {
 	const UObject* World = GetWorld();
 
 	if (!GetWeaponMesh()->GetSocketByName(SocketNameOnWeapon)) return;
 	
-	const FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon);
+	//const FTransform SocketTransform = GetWeaponMesh()->GetSocketTransform(SocketNameOnWeapon);
 	//10.1 получим начальную точку для HeatScan
-	FVector TraceStart = SocketTransform.GetLocation();
+	//FVector TraceStart = SocketTransform.GetLocation();
 	//14.2 получим конечную точку,  сделаем ее чуть дальше чтобы трассировку для HitScan сделать
 	FVector End = TraceStart + ((HitTarget - TraceStart) * 1.25);
 	

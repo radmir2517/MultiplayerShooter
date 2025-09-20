@@ -101,6 +101,9 @@ private:
 	
 	UPROPERTY(BlueprintReadOnly, Category= Movement, meta = (AllowPrivateAccess = "true"))
 	bool bTransformRightHand = false;
+	// локальнная переменнуая для перезарядки
+	UPROPERTY(BlueprintReadOnly, Category= Movement, meta = (AllowPrivateAccess = "true"))
+	bool bIsLocallyReloading = false;
 };
 
 
