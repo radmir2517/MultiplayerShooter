@@ -101,6 +101,7 @@ public:
 	UBuffComponent* GetBuffComponent();
 	// получение компоненты камеры для изменения FOV
 	UCameraComponent* GetCameraComponent();
+	ULagCompensationComponent* GetLagCompensationComponent();
 
 
 	bool UpdateHUDHealth();

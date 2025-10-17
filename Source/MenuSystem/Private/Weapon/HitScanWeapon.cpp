@@ -6,7 +6,9 @@
 #include "Character/MultiplayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MultiplayerComponent/LagCompensationComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Player/MultiplayerPlayerController.h"
 
 
 AHitScanWeapon::AHitScanWeapon()
@@ -37,7 +39,7 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 
 	APawn* OwnerCharacter = Cast<APawn>(GetOwner());
 	// контроллер будет нулевым на всех симуляторах, и будет на игроках которые управляют
-	AController* InstigatorController = OwnerCharacter->GetController();
+	AMultiplayerPlayerController* InstigatorController = Cast<AMultiplayerPlayerController>(OwnerCharacter->GetController());
 	
 	if (!IsValid(OwnerCharacter)) return;
 
@@ -53,9 +55,17 @@ void AHitScanWeapon::OpenFire(const FVector_NetQuantize& TargetPoint)
 	{
 		AMultiplayerCharacter* HitCharacter = Cast<AMultiplayerCharacter>(OutHit.GetActor());
 		
-		if (HitCharacter && InstigatorController && HasAuthority())
+		if (HitCharacter && InstigatorController && HasAuthority() && !bUseServerSideRewind)
 		{	//10.4 применим урон, делает лишь сервер
 			UGameplayStatics::ApplyDamage(HitCharacter,HitScanDamage,InstigatorController,this,UDamageType::StaticClass());
+		}
+		if (HitCharacter && InstigatorController && !HasAuthority() && bUseServerSideRewind && HitCharacter->GetLagCompensationComponent())
+		{//32.6 перематаем время и узнает где он был, если было попадание то произведем выстрел
+			HitCharacter->GetLagCompensationComponent()->ServerScoreRequest(HitCharacter,
+				TraceStart,
+				OutHit.ImpactPoint,
+				InstigatorController->GetServerTime() - InstigatorController->SingleTripTime,
+				this);
 		}
 		if (HitEffect)
 		{ // спавн эффекта вызрыва при попадания снаряда об что то

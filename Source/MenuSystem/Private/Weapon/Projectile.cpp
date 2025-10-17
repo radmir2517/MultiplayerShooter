@@ -20,6 +20,8 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECR_Block);
 	CollisionBox->SetCollisionObjectType(ECC_WorldDynamic);
+
+	
 	
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = false;
@@ -37,6 +39,7 @@ void AProjectile::BeginPlay()
 	{	
 		ProjectileTrailEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(ProjectileTrailEffect,GetRootComponent(),FName(),GetActorLocation(),GetActorRotation(),EAttachLocation::KeepWorldPosition,false);
 	}
+	
 }
 
 void AProjectile::Tick(float DeltaTime)

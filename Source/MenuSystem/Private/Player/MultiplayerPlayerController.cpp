@@ -595,13 +595,14 @@ void AMultiplayerPlayerController::ClientRequestServerTime_Implementation(float 
 {
 	// получение разницы времени между сервером и клиентом
 	float RoundTripTime =  GetWorld()->GetTimeSeconds() - ClientTime;
+	SingleTripTime = 0.5 * RoundTripTime;
 	// получение настощего времени сервера
 	float CurrentServerTime = ServerTime + (0.5 * RoundTripTime);
 	// рассчитываемое время клиента
 	ClientServerDelta =  CurrentServerTime - GetWorld()->GetTimeSeconds();
 	if (MatchState == MatchState::WaitingToStart)
 	{
-		// 1.1 проверим что у нас есть HUD и создадим анносирующий виджет
+		// 11.1 проверим что у нас есть HUD и создадим анносирующий виджет
 		MultiplayerHUD = MultiplayerHUD ? MultiplayerHUD : MultiplayerHUD = Cast<AMultiplayerHUD>(GetHUD());
 		if (MultiplayerHUD && !AnnouncementWidget)
 		{

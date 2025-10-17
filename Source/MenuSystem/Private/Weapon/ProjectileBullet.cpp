@@ -18,16 +18,31 @@ AProjectileBullet::AProjectileBullet()
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
 	// 9.2 вращение снаряда к его направлению скорости
 	ProjectileMovement-> bRotationFollowsVelocity = true;
-	ProjectileMovement->SetIsReplicated(true);
-	ProjectileMovement-> InitialSpeed = 10000.f;
-	ProjectileMovement-> MaxSpeed = 10000.f;
+	ProjectileMovement-> SetIsReplicated(true);
+	ProjectileMovement-> InitialSpeed = InitialSpeed;
+	ProjectileMovement-> MaxSpeed = InitialSpeed;
 }
 
 // Called when the game starts or when spawned
 void AProjectileBullet::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	FPredictProjectilePathParams PathParams;
+	PathParams.ActorsToIgnore.Add(this);
+	PathParams.bTraceWithChannel = true;
+	PathParams.bTraceWithCollision = true;
+	PathParams.TraceChannel = ECC_Visibility;
+	PathParams.DrawDebugTime = 6.f;
+	PathParams.LaunchVelocity = GetActorForwardVector() * InitialSpeed;
+	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
+	PathParams.MaxSimTime = 3.f;
+	PathParams.ProjectileRadius = 3.f;
+	PathParams.StartLocation = GetActorLocation();
+	PathParams.SimFrequency = 30.f;
+
+	FPredictProjectilePathResult PathResult;
+	UGameplayStatics::PredictProjectilePath(this,PathParams,PathResult);
 }
 
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

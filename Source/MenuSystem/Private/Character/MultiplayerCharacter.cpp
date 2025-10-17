@@ -301,9 +301,10 @@ void AMultiplayerCharacter::BeginPlay()
 		PlayerController->SetInputMode(ModeUI);
 	}
 	// 27.6 создадим пустой FramePackage и заполним его карту boxcomponents и потов визуализируем их
-	FFramePackage FramePackage;
-	LagCompensationComponent->SafeFramePackage(FramePackage);
-	LagCompensationComponent->ShowFramePackage(FramePackage,FColor::Orange);
+	//28.1 пока убреем их
+	//FFramePackage FramePackage;
+	//LagCompensationComponent->SafeFramePackage(FramePackage);
+	//LagCompensationComponent->ShowFramePackage(FramePackage,FColor::Orange);
 }
 
 UCombatComponent* AMultiplayerCharacter::GetCombatComponent()
@@ -321,6 +322,10 @@ UCameraComponent* AMultiplayerCharacter::GetCameraComponent()
 	return Camera;
 }
 
+ULagCompensationComponent* AMultiplayerCharacter::GetLagCompensationComponent()
+{
+	return LagCompensationComponent;
+}
 
 bool AMultiplayerCharacter::UpdateHUDHealth()
 {
@@ -779,7 +784,7 @@ void AMultiplayerCharacter::TurnInPlace(float DeltaTime)
 	if (TurningInPlace != TurningInPlace::ETIP_NotTurning)
 	{	// мы медленно снижаем Interp_AO_Yaw до 0 и присваиваем его в AO_Yaw. В ABP_AimInstance у нас RotateRootBone
 		// он поворачивал к -AO_Yaw. Когда он будет снижаться до нуля он будет он будет поворачивать персонажа пока не будет < 15.f
-		Interp_AO_Yaw = FMath::FInterpTo(Interp_AO_Yaw,0,DeltaTime,4.f);
+		Interp_AO_Yaw = FMath::FInterpTo(Interp_AO_Yaw,0.f,DeltaTime,4.f);
 		AO_Yaw = Interp_AO_Yaw;
 		if (FMath::Abs(AO_Yaw) < 15.f)
 		{	// когда < 15.f мы поменяем enum для анимации и условия нашего и обновим StartingCharacterRotation, чтобы AimOffset() работал адекватно

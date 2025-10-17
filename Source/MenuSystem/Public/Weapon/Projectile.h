@@ -69,6 +69,15 @@ protected:
 	// 8.4 время до уничтожения . перенесли с класса Rocket
 	UPROPERTY(EditDefaultsOnly)
 	float DestroyTime = 3.f;
+
+	/*
+	 * Server side Rewind
+	 */
+	//34,1 назначим переменные 
+	UPROPERTY(EditDefaultsOnly)
+	float InitialSpeed = 15000.f;
+	UPROPERTY(EditDefaultsOnly)
+	bool bUseServerSideRewind = false;
 };
 
 

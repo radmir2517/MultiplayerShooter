@@ -67,6 +67,7 @@ public:
 	FORCEINLINE USoundBase* GetPickUpSound() const {return PickUpSound;}
 	FORCEINLINE bool IsStandartWeapon() const {return  bIsStandardWeapon;}
 	FORCEINLINE EFireType GetFireType() const {return FireType;}
+	FORCEINLINE float GetHitScanDamage() const {return HitScanDamage;}
 	void SetCurrentAmmo(const int32 Ammo);
 	//31. задания булевой что это стандартное оружие
 	void SetbStandardWeapon(bool bStandardWeapon);
@@ -212,6 +213,11 @@ protected:
 	int32 SumAddChange = 0;
 	int32 SumSetChange = 0;
 	int32 SumSpendChange = 0;
+
+	// 10.2 уроны обычно в снаряде но из hitScan он будет тут
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
+	float HitScanDamage = 20.f;
+	
 	// функция репликации боеприпаса и отправления значения на экран у клиента
 	UFUNCTION()
 	void OnRep_WeaponAmmo();
@@ -228,6 +234,7 @@ protected:
 	void ClientSetAmmo(int32 ServerAmmo);
 	UFUNCTION(Client,Reliable)
 	void ClientSpendAmmo(int32 ServerAmmo);
+	
 	
 
 	/*

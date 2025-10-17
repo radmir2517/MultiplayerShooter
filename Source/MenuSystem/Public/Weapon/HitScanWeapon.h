@@ -31,9 +31,7 @@ protected:
 	UFUNCTION(CLient, Unreliable)
 	void Client_SpawnHitEffectSound(const UObject* WorldContextObject, FVector_NetQuantize HitLocation);
 	
-	// 10.2 уроны обычно в снаряде но из hitScan он будет тут
-	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
-	float HitScanDamage = 20.f;
+	
 	// 10.3 добавление эффекта попадания и звука попадания
 	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	TObjectPtr<UParticleSystem> HitEffect;
@@ -42,8 +40,9 @@ protected:
 	// 11.1 Трассер для пистолета
 	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
 	TObjectPtr<UParticleSystem> BeamParticles;
-
-	
+	//32.5 переменная которая будет определять нужна ли ей перемотка или нет
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
+	bool bUseServerSideRewind = false;
 private:
 	
 	

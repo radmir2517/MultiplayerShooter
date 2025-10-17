@@ -60,7 +60,22 @@ public:
 	
 	// при изменения состояния MatchState на сервере изменим переменную созданную вручную в PlayerController
 	void OnMatchStateSet(FName InMatchState);
-	
+
+	/*
+ * Синхронизация времени игры на сервере и на клиенте
+ */
+	// получение времени на сервере
+	UFUNCTION(Server, Reliable)
+	void ServerRequestServerTime(float ClientTime);
+	// получение времени сервера + разница между выполнение сервера и клиента
+	UFUNCTION(Client, Reliable)
+	void ClientRequestServerTime(float ClientTime, float ServerTime);
+	// получение времени на сервере минус разница во времени
+	float GetServerTime();
+	// для таймера, запуск ServerRequestServerTime
+	void CheckTimeSync();
+	//30.2 время которое прошло от сервера к клиенту или наоборот, но лишь в одну сторону
+	float SingleTripTime;
 
 	// 5.2 сделай геттер для Character для выключения AimOffset
 	FORCEINLINE bool IsDisableGameplay() const { return bDisableGameplay; }
@@ -69,6 +84,7 @@ public:
 
 	// 24.11 Делегат который сообщит когда Overlay будет готов
 	FOverlayInitializedSignature OnInitializeOverlayInitializedDelegate;
+
 	
 protected:
 
@@ -121,19 +137,7 @@ protected:
 	// таймер отсчета матча
 	FTimerHandle MatchTimerHandle;
 
-	/*
-	 * Синхронизация времени игры на сервере и на клиенте
-	 */
-	// получение времени на сервере
-	UFUNCTION(Server, Reliable)
-	void ServerRequestServerTime(float ClientTime);
-	// получение времени сервера + разница между выполнение сервера и клиента
-	UFUNCTION(Client, Reliable)
-	void ClientRequestServerTime(float ClientTime, float ServerTime);
-	// получение времени на сервере минус разница во времени
-	float GetServerTime();
-	// для таймера, запуск ServerRequestServerTime
-	void CheckTimeSync();
+
 
 
 	//
